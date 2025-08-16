@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@prisma/client": "^6.14.0",
     "@supabase/supabase-js": "^2.55.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -24,6 +25,7 @@
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
+    "prisma": "^6.14.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.6"
   }
