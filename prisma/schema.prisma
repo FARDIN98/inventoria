@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../lib/generated/prisma"
@@ -15,9 +9,294 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// User model with authentication and role management
 model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  role      UserRole @default(USER)
+  isBlocked Boolean  @default(false)
+  language  String   @default("en")
+  theme     String   @default("light")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // OAuth accounts
+  accounts Account[]
+  sessions Session[]
+
+  // Owned inventories
+  ownedInventories Inventory[] @relation("InventoryOwner")
+
+  // Access permissions
+  accessPermissions Access[]
+
+  // Discussion posts
+  discussionPosts DiscussionPost[]
+
+  // Likes
+  likes Like[]
+
+  // Items created by user
+  createdItems Item[] @relation("ItemCreator")
+
+  @@map("users")
 }
 
+// Account model for OAuth
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// Session model for authentication
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// Verification token model
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// Category model for predefined inventory categories
+model Category {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?
+  createdAt   DateTime    @default(now())
+  inventories Inventory[]
+
+  @@map("categories")
+}
+
+// Tag model for inventory tagging
+model Tag {
+  id          String              @id @default(cuid())
+  name        String              @unique
+  createdAt   DateTime            @default(now())
+  inventories InventoryOnTags[]
+
+  @@index([name])
+  @@map("tags")
+}
+
+// Inventory model with optimistic locking and custom fields
+model Inventory {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  image       String?
+  isPublic    Boolean  @default(false)
+  categoryId  String?
+  ownerId     String
+  version     Int      @default(1) // Optimistic locking
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Custom ID format configuration
+  customIdFormat String? @db.Text
+
+  // Relations
+  owner    User     @relation("InventoryOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  // Items in this inventory
+  items Item[]
+
+  // Field templates for custom fields
+  fieldTemplates FieldTemplate[]
+
+  // Access permissions
+  accessPermissions Access[]
+
+  // Tags
+  tags InventoryOnTags[]
+
+  // Discussion posts
+  discussionPosts DiscussionPost[]
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([isPublic])
+  @@index([createdAt])
+  @@map("inventories")
+}
+
+// Junction table for inventory-tag many-to-many relationship
+model InventoryOnTags {
+  inventoryId String
+  tagId       String
+  assignedAt  DateTime @default(now())
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([inventoryId, tagId])
+  @@map("inventory_tags")
+}
+
+// Field template model for custom field definitions
+model FieldTemplate {
+  id            String    @id @default(cuid())
+  inventoryId   String
+  fieldType     FieldType
+  fieldIndex    Int       // 1-3 for each type
+  title         String
+  description   String?
+  isVisible     Boolean   @default(true) // Show in table view
+  displayOrder  Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@unique([inventoryId, fieldType, fieldIndex])
+  @@index([inventoryId])
+  @@map("field_templates")
+}
+
+// Item model with fixed columns and optimistic locking
+model Item {
+  id          String   @id @default(cuid())
+  inventoryId String
+  customId    String   // Custom ID within inventory
+  createdById String
+  version     Int      @default(1) // Optimistic locking
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Fixed text fields (up to 3)
+  text1 String?
+  text2 String?
+  text3 String?
+
+  // Fixed textarea fields (up to 3)
+  textArea1 String? @db.Text
+  textArea2 String? @db.Text
+  textArea3 String? @db.Text
+
+  // Fixed numeric fields (up to 3)
+  num1 Float?
+  num2 Float?
+  num3 Float?
+
+  // Fixed document/image fields (up to 3)
+  doc1 String?
+  doc2 String?
+  doc3 String?
+
+  // Fixed boolean fields (up to 3)
+  bool1 Boolean?
+  bool2 Boolean?
+  bool3 Boolean?
+
+  // Relations
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  createdBy User      @relation("ItemCreator", fields: [createdById], references: [id])
+
+  // Likes
+  likes Like[]
+
+  @@unique([inventoryId, customId]) // Composite unique constraint
+  @@index([inventoryId])
+  @@index([createdById])
+  @@index([createdAt])
+  @@map("items")
+}
+
+// Access model for permission management
+model Access {
+  id          String     @id @default(cuid())
+  inventoryId String
+  userId      String
+  permission  Permission @default(READ)
+  grantedAt   DateTime   @default(now())
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([inventoryId, userId])
+  @@index([inventoryId])
+  @@index([userId])
+  @@map("access")
+}
+
+// Discussion post model for inventory discussions
+model DiscussionPost {
+  id          String   @id @default(cuid())
+  inventoryId String
+  authorId    String
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId, createdAt])
+  @@index([authorId])
+  @@map("discussion_posts")
+}
+
+// Like model for item likes
+model Like {
+  id     String @id @default(cuid())
+  itemId String
+  userId String
+  likedAt DateTime @default(now())
+
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, userId]) // One like per user per item
+  @@index([itemId])
+  @@index([userId])
+  @@map("likes")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Permission {
+  READ
+  WRITE
+}
+
+enum FieldType {
+  TEXT
+  TEXTAREA
+  NUMBER
+  DOCUMENT
+  BOOLEAN
+}
