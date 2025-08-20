@@ -9,7 +9,8 @@ export default function RegisterPage() {
       linkLabel="Already have an account?"
       linkText="Sign in"
       linkHref="/login"
-      showSocialLogin={false}
+      showSocialLogin={true}
+      isLogin={false}
     />
   )
 }

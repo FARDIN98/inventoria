@@ -10,6 +10,7 @@ export default function LoginPage() {
       linkText="Register"
       linkHref="/register"
       showSocialLogin={true}
+      isLogin={true}
     />
   )
 }
