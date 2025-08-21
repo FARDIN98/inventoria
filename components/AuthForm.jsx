@@ -35,7 +35,7 @@ export default function AuthForm({
   // Redirect if already authenticated
   useEffect(() => {
     if (user && !loading) {
-      router.push('/dashboard')
+      router.push('/')
     }
   }, [user, loading, router])
   
@@ -54,7 +54,7 @@ export default function AuthForm({
       }
       
       if (result.success) {
-        router.push('/dashboard')
+        router.push('/')
       } else {
         setError(result.error || 'Authentication failed')
       }
