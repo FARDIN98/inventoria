@@ -1,123 +1,85 @@
 "use client"
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import useAuthStore from '@/lib/stores/auth'
 import InventoryTable from '@/components/InventoryTable'
 import TagCloud from '@/components/TagCloud'
-
-// Dummy data for latest inventories
-const latestInventories = [
-  {
-    id: 1,
-    title: "Vintage Camera Collection",
-    description: "A curated collection of vintage cameras from the 1950s-1980s",
-    image: "/api/placeholder/60/60",
-    creator: "John Photography"
-  },
-  {
-    id: 2,
-    title: "Rare Book Library",
-    description: "First edition books and manuscripts from renowned authors",
-    image: "/api/placeholder/60/60",
-    creator: "Sarah Literature"
-  },
-  {
-    id: 3,
-    title: "Antique Furniture Catalog",
-    description: "Victorian and Art Deco furniture pieces",
-    image: "/api/placeholder/60/60",
-    creator: "Mike Antiques"
-  },
-  {
-    id: 4,
-    title: "Coin Collection Database",
-    description: "Rare coins from different countries and time periods",
-    image: "/api/placeholder/60/60",
-    creator: "Emma Numismatics"
-  },
-  {
-    id: 5,
-    title: "Art Supplies Inventory",
-    description: "Professional art supplies and materials catalog",
-    image: "/api/placeholder/60/60",
-    creator: "David Arts"
-  }
-]
-
-// Dummy data for popular inventories
-const popularInventories = [
-  {
-    id: 6,
-    title: "Gaming Console Archive",
-    description: "Retro gaming consoles and accessories collection",
-    image: "/api/placeholder/60/60",
-    creator: "Alex Gaming"
-  },
-  {
-    id: 7,
-    title: "Wine Cellar Catalog",
-    description: "Premium wines from various regions and vintages",
-    image: "/api/placeholder/60/60",
-    creator: "Robert Sommelier"
-  },
-  {
-    id: 8,
-    title: "Stamp Collection Registry",
-    description: "Rare and commemorative stamps from around the world",
-    image: "/api/placeholder/60/60",
-    creator: "Lisa Philately"
-  },
-  {
-    id: 9,
-    title: "Musical Instruments Hub",
-    description: "Vintage and modern musical instruments inventory",
-    image: "/api/placeholder/60/60",
-    creator: "Tom Music"
-  },
-  {
-    id: 10,
-    title: "Sports Memorabilia",
-    description: "Authentic sports collectibles and memorabilia",
-    image: "/api/placeholder/60/60",
-    creator: "Chris Sports"
-  }
-]
-
-// Popular tags for the tag cloud
-const popularTags = [
-  { name: "vintage", count: 45 },
-  { name: "collectibles", count: 38 },
-  { name: "antique", count: 32 },
-  { name: "rare", count: 28 },
-  { name: "books", count: 25 },
-  { name: "art", count: 22 },
-  { name: "furniture", count: 20 },
-  { name: "electronics", count: 18 },
-  { name: "coins", count: 16 },
-  { name: "stamps", count: 14 },
-  { name: "music", count: 12 },
-  { name: "sports", count: 10 },
-  { name: "photography", count: 8 },
-  { name: "gaming", count: 6 }
-]
+import { getHomeDataAction } from '@/lib/home-actions'
+import { Button } from '@/components/ui/button'
 
 export default function HomePage() {
   const { user, loading, initialize } = useAuthStore()
   const router = useRouter()
+  
+  // State for home page data
+  const [homeData, setHomeData] = useState({
+    latestInventories: [],
+    popularInventories: [],
+    popularTags: []
+  })
+  const [dataLoading, setDataLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   // Initialize auth state on component mount
   useEffect(() => {
     initialize()
   }, [])
+  
+  // Fetch home page data
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        setDataLoading(true)
+        setError(null)
+        const result = await getHomeDataAction()
+        
+        if (result.success) {
+          setHomeData({
+            latestInventories: result.data.latestInventories,
+            popularInventories: result.data.popularInventories,
+            popularTags: result.data.tagCloud
+          })
+        } else {
+          setError(result.error || 'Failed to load data')
+        }
+      } catch (err) {
+        setError('An unexpected error occurred')
+        console.error('Error fetching home data:', err)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+    
+    fetchHomeData()
+  }, [])
 
   // No redirect needed - authenticated users can view the home page
 
-  // Show loading state while checking authentication
-  if (loading) {
+  // Show loading state while checking authentication or loading data
+  if (loading || dataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+  
+  // Show error state if data loading failed
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Data</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     )
   }
@@ -141,6 +103,19 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Dashboard Button - Only for authenticated users */}
+      {user && (
+        <section className="py-6 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto text-center">
+            <Link href="/dashboard">
+              <Button size="lg" className="px-8 py-3">
+                Go To Dashboard
+              </Button>
+            </Link>
+          </div>
+        </section>
+      )}
+
       {/* Latest Inventories Section */}
       <section className="py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -153,11 +128,13 @@ export default function HomePage() {
             </p>
           </div>
           <InventoryTable 
-            data={latestInventories} 
+            data={homeData.latestInventories} 
             title="Latest Inventories"
           />
         </div>
       </section>
+
+      
 
       {/* Popular Inventories Section */}
       <section className="py-8 px-4 sm:px-6 lg:px-8">
@@ -171,7 +148,7 @@ export default function HomePage() {
             </p>
           </div>
           <InventoryTable 
-            data={popularInventories} 
+            data={homeData.popularInventories} 
             title="Top 5 Popular Inventories"
           />
         </div>
@@ -188,7 +165,7 @@ export default function HomePage() {
               Explore collections by popular categories
             </p>
           </div>
-          <TagCloud tags={popularTags} />
+          <TagCloud tags={homeData.popularTags} />
         </div>
       </section>
 

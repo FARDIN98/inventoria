@@ -28,7 +28,7 @@ export default function InventoryTable({ data, title }) {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[300px]">Title</TableHead>
-            <TableHead>Description/Image</TableHead>
+            <TableHead>Description</TableHead>
             <TableHead className="w-[200px]">Creator</TableHead>
           </TableRow>
         </TableHeader>
@@ -45,15 +45,6 @@ export default function InventoryTable({ data, title }) {
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
-                  <div className="relative h-12 w-12 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                    <Image
-                      src={inventory.image}
-                      alt={inventory.title}
-                      fill
-                      className="object-cover"
-                      sizes="48px"
-                    />
-                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-muted-foreground line-clamp-2">
                       {inventory.description}
@@ -63,7 +54,7 @@ export default function InventoryTable({ data, title }) {
               </TableCell>
               <TableCell>
                 <div className="text-sm font-medium text-foreground">
-                  {inventory.creator}
+                  {inventory.users?.name || inventory.users?.email || 'Unknown'}
                 </div>
               </TableCell>
             </TableRow>
