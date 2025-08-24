@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useAuthStore from '@/lib/stores/auth';
-import { getUserInventoriesAction, requireAuth } from '@/lib/inventory-actions';
+import { getUserInventoriesAction, requireAuth, deleteInventoryAction } from '@/lib/inventory-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuthStore();
@@ -16,6 +18,9 @@ export default function DashboardPage() {
   const [inventories, setInventories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedInventories, setSelectedInventories] = useState(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     async function checkAuthAndLoadData() {
@@ -42,6 +47,67 @@ export default function DashboardPage() {
 
     checkAuthAndLoadData();
   }, [isLoading, router]);
+
+  // Handle inventory selection
+  const handleSelectInventory = (inventoryId, checked) => {
+    const newSelected = new Set(selectedInventories);
+    if (checked) {
+      newSelected.add(inventoryId);
+    } else {
+      newSelected.delete(inventoryId);
+    }
+    setSelectedInventories(newSelected);
+  };
+
+  // Handle select all
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedInventories(new Set(inventories.map(inv => inv.id)));
+    } else {
+      setSelectedInventories(new Set());
+    }
+  };
+
+  // Handle edit action
+  const handleEdit = () => {
+    if (selectedInventories.size === 1) {
+      const inventoryId = Array.from(selectedInventories)[0];
+      router.push(`/inventory/edit?id=${inventoryId}`);
+    }
+  };
+
+  // Handle delete action
+  const handleDelete = async () => {
+    if (selectedInventories.size === 0) return;
+    
+    setIsDeleting(true);
+    const deletePromises = Array.from(selectedInventories).map(async (inventoryId) => {
+      const result = await deleteInventoryAction(inventoryId);
+      if (!result.success) {
+        console.error(`Failed to delete inventory ${inventoryId}:`, result.error);
+        return { inventoryId, error: result.error };
+      }
+      return { inventoryId, success: true };
+    });
+
+    try {
+      const results = await Promise.all(deletePromises);
+      const errors = results.filter(r => r.error);
+      
+      if (errors.length > 0) {
+        setError(`Failed to delete some inventories: ${errors.map(e => e.error).join(', ')}`);
+      } else {
+        // Remove deleted inventories from state
+        setInventories(prev => prev.filter(inv => !selectedInventories.has(inv.id)));
+        setSelectedInventories(new Set());
+      }
+    } catch (err) {
+      setError('An unexpected error occurred while deleting inventories');
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
 
   if (isLoading || loading) {
     return (
@@ -71,6 +137,62 @@ export default function DashboardPage() {
         </Link>
       </div>
 
+      {/* Toolbar */}
+      {inventories && inventories.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">
+                  {selectedInventories.size} of {inventories.length} selected
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEdit}
+                  disabled={selectedInventories.size !== 1}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={selectedInventories.size === 0}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete ({selectedInventories.size})
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the selected inventory(ies) and all associated data.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isDeleting ? 'Deleting...' : 'Delete'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Error Display */}
       {error && (
         <Card className="border-destructive">
@@ -83,10 +205,10 @@ export default function DashboardPage() {
       {/* Inventories Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Inventory Items</CardTitle>
+          <CardTitle>Inventory</CardTitle>
           <CardDescription>
             {inventories && inventories.length > 0 
-              ? `You have ${inventories.length} inventory item${inventories.length === 1 ? '' : 's'}`
+              ? `You have ${inventories.length} inventory${inventories.length === 1 ? '' : 's'}`
               : 'No inventory items found'
             }
           </CardDescription>
@@ -112,6 +234,13 @@ export default function DashboardPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={selectedInventories.size === inventories.length && inventories.length > 0}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all inventories"
+                    />
+                  </TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Category</TableHead>
@@ -121,9 +250,24 @@ export default function DashboardPage() {
               </TableHeader>
               <TableBody>
                 {inventories && inventories.map((inventory) => (
-                  <TableRow key={inventory.id}>
+                  <TableRow 
+                    key={inventory.id}
+                    className={selectedInventories.has(inventory.id) ? 'bg-muted/50' : ''}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedInventories.has(inventory.id)}
+                        onCheckedChange={(checked) => handleSelectInventory(inventory.id, checked)}
+                        aria-label={`Select ${inventory.title}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">
-                      {inventory.title}
+                      <Link 
+                        href={`/inventory/${inventory.id}`}
+                        className="hover:underline text-primary"
+                      >
+                        {inventory.title}
+                      </Link>
                     </TableCell>
                     <TableCell className="max-w-xs truncate">
                       {inventory.description || 'No description'}
