@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from 'react'
 import {
   Table,
   TableBody,
@@ -13,8 +12,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 
 export default function UserManagementTable({ users, selectedUsers, onSelectionChange }) {
-  const [selectAll, setSelectAll] = useState(false)
-
   if (!users || users.length === 0) {
     return (
       <div className="rounded-md border">
@@ -25,8 +22,11 @@ export default function UserManagementTable({ users, selectedUsers, onSelectionC
     )
   }
 
+  // Calculate selectAll state based on current selection
+  const allSelected = users.length > 0 && selectedUsers.length === users.length
+  const someSelected = selectedUsers.length > 0 && selectedUsers.length < users.length
+
   const handleSelectAll = (checked) => {
-    setSelectAll(checked)
     if (checked) {
       onSelectionChange(users.map(user => user.id))
     } else {
@@ -39,7 +39,6 @@ export default function UserManagementTable({ users, selectedUsers, onSelectionC
       onSelectionChange([...selectedUsers, userId])
     } else {
       onSelectionChange(selectedUsers.filter(id => id !== userId))
-      setSelectAll(false)
     }
   }
 
@@ -74,7 +73,8 @@ export default function UserManagementTable({ users, selectedUsers, onSelectionC
           <TableRow>
             <TableHead className="w-[50px]">
               <Checkbox
-                checked={selectAll}
+                checked={allSelected}
+                indeterminate={someSelected}
                 onCheckedChange={handleSelectAll}
                 aria-label="Select all users"
               />

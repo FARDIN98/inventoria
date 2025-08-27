@@ -1,35 +1,38 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { toast } from 'sonner'
 import UserManagementTable from '@/components/admin/UserManagementTable'
 import AdminToolbar from '@/components/admin/AdminToolbar'
-import {
-  getAllUsersAction,
-  bulkBlockUsersAction,
-  bulkUnblockUsersAction,
-  bulkDeleteUsersAction,
-  promoteToAdminAction,
-  demoteFromAdminAction,
-  checkAdminPermission
-} from '@/lib/admin-actions'
+import { checkAdminPermission } from '@/lib/admin-actions'
 import { useRouter } from 'next/navigation'
 import useAuthStore from '@/lib/stores/auth'
+import useAdminStore from '@/lib/stores/admin'
 
 export default function AdminDashboard() {
-  const [users, setUsers] = useState([])
-  const [selectedUsers, setSelectedUsers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const {
+    users,
+    selectedUsers,
+    loading,
+    error,
+    isAdmin,
+    operationLoading,
+    checkAdminStatus,
+    loadAllUsers,
+    bulkBlock,
+    bulkUnblock,
+    bulkDelete,
+    bulkPromote,
+    bulkDemote,
+    setSelectedUsers,
+    clearAll
+  } = useAdminStore()
   const router = useRouter()
 
   // Check admin permission and load users
   useEffect(() => {
     async function initializeAdmin() {
       try {
-        setLoading(true)
-        setError(null)
-        
         // Check if user has admin permission
         const adminCheck = await checkAdminPermission()
         if (!adminCheck.success || !adminCheck.isAdmin) {
@@ -38,35 +41,20 @@ export default function AdminDashboard() {
           return
         }
 
-        // Load all users
-        const result = await getAllUsersAction()
-        console.log('Fetched users:', result.users?.length, result.users)
-        if (result.success) {
-          setUsers(result.users)
-        } else {
-          setError(result.error)
-          toast.error(result.error)
-        }
+        // Load admin status and all users
+        await checkAdminStatus()
+        await loadAllUsers()
       } catch (err) {
-        setError('Failed to load admin dashboard')
         toast.error('Failed to load admin dashboard')
-      } finally {
-        setLoading(false)
       }
     }
 
     initializeAdmin()
-  }, [])
+  }, [checkAdminStatus, loadAllUsers, router])
 
   const refreshUsers = async () => {
     try {
-      const result = await getAllUsersAction()
-      if (result.success) {
-        setUsers(result.users)
-        setSelectedUsers([]) // Clear selection after refresh
-      } else {
-        toast.error(result.error)
-      }
+      await loadAllUsers()
     } catch (err) {
       toast.error('Failed to refresh users')
     }
@@ -74,13 +62,8 @@ export default function AdminDashboard() {
 
   const handleBulkBlock = async () => {
     try {
-      const result = await bulkBlockUsersAction(selectedUsers)
-      if (result.success) {
-        toast.success(`Successfully blocked ${result.count} user${result.count !== 1 ? 's' : ''}`)
-        await refreshUsers()
-      } else {
-        toast.error(result.error)
-      }
+      await bulkBlock(selectedUsers)
+      toast.success(`Successfully blocked ${selectedUsers.length} user${selectedUsers.length !== 1 ? 's' : ''}`)
     } catch (err) {
       toast.error('Failed to block users')
     }
@@ -88,13 +71,8 @@ export default function AdminDashboard() {
 
   const handleBulkUnblock = async () => {
     try {
-      const result = await bulkUnblockUsersAction(selectedUsers)
-      if (result.success) {
-        toast.success(`Successfully unblocked ${result.count} user${result.count !== 1 ? 's' : ''}`)
-        await refreshUsers()
-      } else {
-        toast.error(result.error)
-      }
+      await bulkUnblock(selectedUsers)
+      toast.success(`Successfully unblocked ${selectedUsers.length} user${selectedUsers.length !== 1 ? 's' : ''}`)
     } catch (err) {
       toast.error('Failed to unblock users')
     }
@@ -102,13 +80,8 @@ export default function AdminDashboard() {
 
   const handleBulkDelete = async () => {
     try {
-      const result = await bulkDeleteUsersAction(selectedUsers)
-      if (result.success) {
-        toast.success(`Successfully deleted ${result.count} user${result.count !== 1 ? 's' : ''}`)
-        await refreshUsers()
-      } else {
-        toast.error(result.error)
-      }
+      await bulkDelete(selectedUsers)
+      toast.success(`Successfully deleted ${selectedUsers.length} user${selectedUsers.length !== 1 ? 's' : ''}`)
     } catch (err) {
       toast.error('Failed to delete users')
     }
@@ -116,21 +89,8 @@ export default function AdminDashboard() {
 
   const handleBulkPromote = async () => {
     try {
-      // Promote users one by one since we don't have a bulk promote action
-      const promises = selectedUsers.map(userId => promoteToAdminAction(userId))
-      const results = await Promise.all(promises)
-      
-      const successCount = results.filter(r => r.success).length
-      const failCount = results.filter(r => !r.success).length
-      
-      if (successCount > 0) {
-        toast.success(`Successfully promoted ${successCount} user${successCount !== 1 ? 's' : ''} to admin`)
-      }
-      if (failCount > 0) {
-        toast.error(`Failed to promote ${failCount} user${failCount !== 1 ? 's' : ''}`)
-      }
-      
-      await refreshUsers()
+      await bulkPromote(selectedUsers)
+      toast.success(`Successfully promoted ${selectedUsers.length} user${selectedUsers.length !== 1 ? 's' : ''} to admin`)
     } catch (err) {
       toast.error('Failed to promote users')
     }
@@ -138,35 +98,17 @@ export default function AdminDashboard() {
 
   const handleBulkDemote = async () => {
     try {
-      const { user: currentUser } = useAuthStore.getState()
-      
-      // Demote users one by one since we don't have a bulk demote action
-      const promises = selectedUsers.map(userId => demoteFromAdminAction(userId))
-      const results = await Promise.all(promises)
-      
-      const successCount = results.filter(r => r.success).length
-      const failCount = results.filter(r => !r.success).length
-      
-      // Check if current user demoted themselves
-      const selfDemotionResult = results.find(r => r.success && r.isSelfDemotion)
-      
-      if (successCount > 0) {
-        toast.success(`Successfully demoted ${successCount} user${successCount !== 1 ? 's' : ''} from admin`)
-      }
-      if (failCount > 0) {
-        toast.error(`Failed to demote ${failCount} user${failCount !== 1 ? 's' : ''}`)
-      }
+      const result = await bulkDemote(selectedUsers)
+      toast.success(`Successfully demoted ${selectedUsers.length} user${selectedUsers.length !== 1 ? 's' : ''} from admin`)
       
       // If admin demoted themselves, redirect to homepage
-      if (selfDemotionResult) {
+      if (result?.isSelfDemotion) {
         toast.info('You have been demoted from admin. Redirecting to login...')
         setTimeout(() => {
           router.push('/')
         }, 1500)
         return
       }
-      
-      await refreshUsers()
     } catch (err) {
       toast.error('Failed to demote users')
     }
@@ -207,7 +149,7 @@ export default function AdminDashboard() {
         onDeleteUsers={handleBulkDelete}
         onPromoteUsers={handleBulkPromote}
         onDemoteUsers={handleBulkDemote}
-        loading={loading}
+        loading={operationLoading}
       />
       
       <UserManagementTable

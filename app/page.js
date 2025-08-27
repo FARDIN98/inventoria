@@ -1,26 +1,26 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import useAuthStore from '@/lib/stores/auth'
+import useHomeStore from '@/lib/stores/home'
 import InventoryTable from '@/components/InventoryTable'
 import TagCloud from '@/components/TagCloud'
-import { getHomeDataAction } from '@/lib/home-actions'
 import { Button } from '@/components/ui/button'
 
 export default function HomePage() {
   const { user, loading, initialize } = useAuthStore()
+  const {
+    homeData,
+    loading: dataLoading,
+    error,
+    loadHomeData,
+    getLatestInventories,
+    getPopularInventories,
+    getPopularTags
+  } = useHomeStore()
   const router = useRouter()
-  
-  // State for home page data
-  const [homeData, setHomeData] = useState({
-    latestInventories: [],
-    popularInventories: [],
-    popularTags: []
-  })
-  const [dataLoading, setDataLoading] = useState(true)
-  const [error, setError] = useState(null)
 
   // Initialize auth state on component mount
   useEffect(() => {
@@ -29,31 +29,8 @@ export default function HomePage() {
   
   // Fetch home page data
   useEffect(() => {
-    const fetchHomeData = async () => {
-      try {
-        setDataLoading(true)
-        setError(null)
-        const result = await getHomeDataAction()
-        
-        if (result.success) {
-          setHomeData({
-            latestInventories: result.data.latestInventories,
-            popularInventories: result.data.popularInventories,
-            popularTags: result.data.tagCloud
-          })
-        } else {
-          setError(result.error || 'Failed to load data')
-        }
-      } catch (err) {
-        setError('An unexpected error occurred')
-        console.error('Error fetching home data:', err)
-      } finally {
-        setDataLoading(false)
-      }
-    }
-    
-    fetchHomeData()
-  }, [])
+    loadHomeData()
+  }, [loadHomeData])
 
   // No redirect needed - authenticated users can view the home page
 
@@ -128,7 +105,7 @@ export default function HomePage() {
             </p>
           </div>
           <InventoryTable 
-            data={homeData.latestInventories} 
+            data={getLatestInventories()} 
             title="Latest Inventories"
           />
         </div>
@@ -148,7 +125,7 @@ export default function HomePage() {
             </p>
           </div>
           <InventoryTable 
-            data={homeData.popularInventories} 
+            data={getPopularInventories()} 
             title="Top 5 Popular Inventories"
           />
         </div>
@@ -165,7 +142,7 @@ export default function HomePage() {
               Explore collections by popular categories
             </p>
           </div>
-          <TagCloud tags={homeData.popularTags} />
+          <TagCloud tags={getPopularTags()} />
         </div>
       </section>
 
