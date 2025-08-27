@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import useAuthStore from '@/lib/stores/auth'
-import { editInventoryAction, getCategoriesAction, getInventoryByIdAction } from '@/lib/inventory-actions'
+import { editInventoryAction, getCategoriesAction, getInventoryByIdAction, getUserInventoriesAction } from '@/lib/inventory-actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Loader2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-export default function EditInventoryPage() {
+function EditInventoryPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const inventoryId = searchParams.get('id')
@@ -72,8 +72,13 @@ export default function EditInventoryPage() {
         if (result.success) {
           const inv = result.inventory
           
-          // Check if user owns this inventory
-          if (inv.ownerId !== user.id) {
+          // Check if user owns this inventory, is admin, or inventory is public
+          // First check if user is admin
+          const userResult = await getUserInventoriesAction()
+          const isAdmin = userResult.isAdmin
+          
+          // Allow access if: owner, admin, or public inventory
+          if (inv.ownerId !== user.id && !isAdmin && !inv.isPublic) {
             router.push('/dashboard')
             return
           }
@@ -368,5 +373,17 @@ export default function EditInventoryPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function EditInventoryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    }>
+      <EditInventoryPageContent />
+    </Suspense>
   )
 }

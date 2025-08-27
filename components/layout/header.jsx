@@ -1,12 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { Search } from "lucide-react"
+import { Search, Settings } from "lucide-react"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import useAuthStore from "@/lib/stores/auth"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { checkAdminPermission } from "@/lib/admin-actions"
 
 /**
  * Global Header component with navigation, search, and theme toggle
@@ -16,11 +17,29 @@ import { useEffect } from "react"
  */
 export function Header() {
   const { user, loading, initialize, signOut } = useAuthStore()
+  const [isAdmin, setIsAdmin] = useState(false)
 
   // Initialize auth state on component mount
   useEffect(() => {
     initialize()
   }, [])
+
+  // Check admin status when user changes
+  useEffect(() => {
+    async function checkAdmin() {
+      if (user) {
+        try {
+          const result = await checkAdminPermission()
+          setIsAdmin(result.success && result.isAdmin)
+        } catch (error) {
+          setIsAdmin(false)
+        }
+      } else {
+        setIsAdmin(false)
+      }
+    }
+    checkAdmin()
+  }, [user])
 
   const handleLogout = async () => {
     await signOut()
@@ -64,6 +83,21 @@ export function Header() {
               </Button>
             )}
             
+            {/* Navigation Links for authenticated users */}
+            {user && (
+              <div className="flex items-center space-x-2">
+                
+                {isAdmin && (
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href="/admin" className="flex items-center gap-1">
+                      <Settings className="h-4 w-4" />
+                      Admin
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            )}
+
             {/* Authentication Section */}
             {loading ? (
               <div className="h-9 w-20 bg-muted animate-pulse rounded-md" />

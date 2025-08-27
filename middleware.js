@@ -35,6 +35,66 @@ export async function middleware(request) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Check for admin routes
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    console.log('Admin route accessed by user:', user?.id)
+    
+    if (!user) {
+      console.log('No user found, redirecting to login')
+      // Redirect to login if not authenticated
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    try {
+      // Use service role key to bypass RLS for admin permission check
+      const { createClient } = await import('@supabase/supabase-js')
+      const adminSupabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      )
+
+      // Check if user has admin role
+      const { data: userRecord, error } = await adminSupabase
+        .from('users')
+        .select('role, isBlocked')
+        .eq('id', user.id)
+        .single()
+
+      console.log('User record from middleware:', userRecord, 'Error:', error)
+
+      if (error) {
+        console.error('Database error in middleware:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        })
+        // If there's a database error, redirect to dashboard for safety
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+
+      if (!userRecord || userRecord.role !== 'ADMIN' || userRecord.isBlocked) {
+        console.log('Admin access denied - User role:', userRecord?.role, 'Blocked:', userRecord?.isBlocked)
+        // Redirect to dashboard if not admin or blocked
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+      
+      console.log('Admin access granted for user:', user.id)
+    } catch (middlewareError) {
+      console.error('Middleware error:', middlewareError)
+      // If there's any error, redirect to dashboard for safety
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+  }
+
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&

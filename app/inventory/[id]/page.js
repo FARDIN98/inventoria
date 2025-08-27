@@ -1,5 +1,6 @@
-import { getInventoryByIdAction } from '@/lib/inventory-actions';
+import { getInventoryByIdAction, toggleInventoryVisibilityAction } from '@/lib/inventory-actions';
 import { getInventoryItemsAction } from '@/lib/item-actions';
+import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ItemsTableWrapper from '@/components/ItemsTableWrapper';
+import VisibilityToggle from '@/components/VisibilityToggle';
 import { getCurrentUserServer } from '@/lib/auth-actions';
 
 export default async function InventoryDetailPage({ params }) {
@@ -24,8 +26,22 @@ export default async function InventoryDetailPage({ params }) {
   
   const inventory = result.inventory;
   
-  // Check if current user can edit this inventory
-  const canEdit = user && inventory.ownerId === user.id;
+  // Check if user is admin
+  let isAdmin = false;
+  if (user) {
+    const supabase = await createClient();
+    const { data: userRecord } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    
+    isAdmin = userRecord?.role === 'ADMIN';
+  }
+  
+  // Check if current user can edit this inventory (owner, admin, or authenticated user with public inventory)
+  const canEdit = user && (inventory.ownerId === user.id || isAdmin || inventory.isPublic);
+  const canToggleVisibility = user && (inventory.ownerId === user.id || isAdmin);
   
   // Get items for this inventory
   const itemsResult = await getInventoryItemsAction(id);
@@ -43,20 +59,34 @@ export default async function InventoryDetailPage({ params }) {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{inventory.title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl font-bold tracking-tight">{inventory.title}</h1>
+              {isAdmin && (
+                <Badge variant="outline" className="text-amber-600 border-amber-600">
+                  Admin View
+                </Badge>
+              )}
+            </div>
             <p className="text-muted-foreground">
               Created by {inventory.users?.name || inventory.users?.email || 'Unknown'} on {new Date(inventory.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
-        {canEdit && (
-          <Link href={`/inventory/edit?id=${inventory.id}`}>
-            <Button className="flex items-center gap-2">
-              <Edit className="h-4 w-4" />
-              Edit Inventory
-            </Button>
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <VisibilityToggle 
+            inventoryId={inventory.id}
+            isPublic={inventory.isPublic}
+            canToggle={canToggleVisibility}
+          />
+          {canEdit && (
+            <Link href={`/inventory/edit?id=${inventory.id}`}>
+              <Button className="flex items-center gap-2">
+                <Edit className="h-4 w-4" />
+                Edit Inventory
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Inventory Details */}
