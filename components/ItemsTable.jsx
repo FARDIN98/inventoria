@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -32,6 +33,7 @@ export default function ItemsTable({
   canEdit = false, 
   onItemsChange 
 }) {
+  const { t } = useTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -86,7 +88,7 @@ export default function ItemsTable({
     if (type === 'boolean') {
       return (
         <Badge variant={value ? 'default' : 'secondary'}>
-          {value ? 'Yes' : 'No'}
+          {value ? t('common.yes') : t('common.no')}
         </Badge>
       );
     }
@@ -116,19 +118,19 @@ export default function ItemsTable({
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">Items</h3>
+          <h3 className="text-lg font-semibold">{t('items.title')}</h3>
           {canEdit && (
             <Button onClick={handleAddItem} size="sm">
               <Plus className="h-4 w-4 mr-2" />
-              Add Item
+              {t('items.addItem')}
             </Button>
           )}
         </div>
         
         <div className="text-center py-8 text-muted-foreground">
-          <p>No items in this inventory yet.</p>
+          <p>{t('items.noItems')}</p>
           {canEdit && (
-            <p className="text-sm mt-2">Click "Add Item" to get started.</p>
+            <p className="text-sm mt-2">{t('items.getStarted')}</p>
           )}
         </div>
 
@@ -148,11 +150,11 @@ export default function ItemsTable({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Items ({items.length})</h3>
+        <h3 className="text-lg font-semibold">{t('items.itemsCount', { count: items.length })}</h3>
         {canEdit && (
           <Button onClick={handleAddItem} size="sm">
             <Plus className="h-4 w-4 mr-2" />
-            Add Item
+            {t('items.addItem')}
           </Button>
         )}
       </div>
@@ -161,17 +163,17 @@ export default function ItemsTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">Custom ID</TableHead>
-              <TableHead>Text 1</TableHead>
-              <TableHead>Text 2</TableHead>
-              <TableHead>Text 3</TableHead>
-              <TableHead>Number 1</TableHead>
-              <TableHead>Number 2</TableHead>
-              <TableHead>Number 3</TableHead>
-              <TableHead>Bool 1</TableHead>
-              <TableHead>Bool 2</TableHead>
-              <TableHead>Bool 3</TableHead>
-              {canEdit && <TableHead className="w-[100px]">Actions</TableHead>}
+              <TableHead className="w-[120px]">{t('items.customId')}</TableHead>
+            <TableHead>{t('items.text1')}</TableHead>
+            <TableHead>{t('items.text2')}</TableHead>
+            <TableHead>{t('items.text3')}</TableHead>
+            <TableHead>{t('items.number1')}</TableHead>
+            <TableHead>{t('items.number2')}</TableHead>
+            <TableHead>{t('items.number3')}</TableHead>
+            <TableHead>{t('items.bool1')}</TableHead>
+            <TableHead>{t('items.bool2')}</TableHead>
+            <TableHead>{t('items.bool3')}</TableHead>
+            {canEdit && <TableHead className="w-[100px]">{t('common.actions')}</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
