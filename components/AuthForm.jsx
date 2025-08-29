@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import useAuthStore from '@/lib/stores/auth'
 import { signInAction, signUpAction } from '@/lib/auth-actions'
 
@@ -19,6 +20,7 @@ export default function AuthForm({
   showSocialLogin = false,
   isLogin = false 
 }) {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -56,10 +58,10 @@ export default function AuthForm({
       if (result.success) {
         router.push('/')
       } else {
-        setError(result.error || 'Authentication failed')
+        setError(result.error || t('auth.authenticationFailed'))
       }
     } catch (error) {
-      setError(error.message || 'An unexpected error occurred')
+      setError(error.message || t('errors.unexpected'))
     } finally {
       setIsSubmitting(false)
     }
@@ -73,11 +75,11 @@ export default function AuthForm({
     try {
       const result = await signInWithOAuth(provider)
       if (!result.success) {
-        setError(result.error || `${provider} login failed`)
+        setError(result.error || t('auth.socialLoginFailed', { provider }))
       }
       // OAuth will handle redirect automatically
     } catch (error) {
-      setError(error.message || 'Social login failed')
+      setError(error.message || t('auth.socialLoginFailed', { provider: 'Social' }))
     } finally {
       setIsSubmitting(false)
     }
@@ -103,12 +105,12 @@ export default function AuthForm({
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email
+                  {t('auth.email')}
                 </label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={t('auth.enterEmail')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -118,12 +120,12 @@ export default function AuthForm({
               </div>
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Password
+                  {t('auth.password')}
                 </label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t('auth.enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -141,7 +143,7 @@ export default function AuthForm({
                 disabled={isSubmitting || loading || !email || !password}
                 className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting || loading ? 'Please wait...' : submitText}
+                {isSubmitting || loading ? t('auth.pleaseWait') : submitText}
               </Button>
             </form>
             
@@ -152,7 +154,7 @@ export default function AuthForm({
                     <span className="w-full border-t border-gray-300 dark:border-gray-600" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">Or continue with</span>
+                    <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">{t('auth.orContinueWith')}</span>
                   </div>
                 </div>
                 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -31,6 +32,7 @@ export default function AdminToolbar({
   onDemoteUsers,
   loading 
 }) {
+  const { t } = useTranslation()
   const [actionLoading, setActionLoading] = useState(null)
   const selectedCount = selectedUsers.length
 
@@ -49,7 +51,7 @@ export default function AdminToolbar({
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
-            Select users to perform bulk actions
+            {t('admin.selectUsersForActions')}
           </span>
         </div>
       </div>
@@ -61,7 +63,7 @@ export default function AdminToolbar({
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5" />
         <span className="text-sm font-medium">
-          {selectedCount} user{selectedCount !== 1 ? 's' : ''} selected
+          {t('admin.usersSelected', { count: selectedCount })}
         </span>
       </div>
       
@@ -75,24 +77,23 @@ export default function AdminToolbar({
               disabled={loading || actionLoading}
             >
               <ShieldOff className="h-4 w-4 mr-2" />
-              Block
+              {t('admin.block')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Block Users</AlertDialogTitle>
+              <AlertDialogTitle>{t('admin.blockUsers')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to block {selectedCount} user{selectedCount !== 1 ? 's' : ''}? 
-                Blocked users will not be able to access the application.
+                {t('admin.blockUsersConfirm', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => handleAction(onBlockUsers, 'block')}
                 disabled={actionLoading === 'block'}
               >
-                {actionLoading === 'block' ? 'Blocking...' : 'Block Users'}
+                {actionLoading === 'block' ? t('admin.blocking') : t('admin.blockUsers')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -107,24 +108,23 @@ export default function AdminToolbar({
               disabled={loading || actionLoading}
             >
               <Shield className="h-4 w-4 mr-2" />
-              Unblock
+              {t('admin.unblock')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Unblock Users</AlertDialogTitle>
+              <AlertDialogTitle>{t('admin.unblockUsers')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to unblock {selectedCount} user{selectedCount !== 1 ? 's' : ''}? 
-                Unblocked users will regain access to the application.
+                {t('admin.unblockUsersConfirm', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => handleAction(onUnblockUsers, 'unblock')}
                 disabled={actionLoading === 'unblock'}
               >
-                {actionLoading === 'unblock' ? 'Unblocking...' : 'Unblock Users'}
+                {actionLoading === 'unblock' ? t('admin.unblocking') : t('admin.unblockUsers')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -139,24 +139,23 @@ export default function AdminToolbar({
               disabled={loading || actionLoading}
             >
               <UserPlus className="h-4 w-4 mr-2" />
-              Promote
+              {t('admin.promote')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Promote to Admin</AlertDialogTitle>
+              <AlertDialogTitle>{t('admin.promoteToAdmin')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to promote {selectedCount} user{selectedCount !== 1 ? 's' : ''} to admin role? 
-                Admin users will have full access to the application.
+                {t('admin.promoteUsersConfirm', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => handleAction(onPromoteUsers, 'promote')}
                 disabled={actionLoading === 'promote'}
               >
-                {actionLoading === 'promote' ? 'Promoting...' : 'Promote Users'}
+                {actionLoading === 'promote' ? t('admin.promoting') : t('admin.promoteUsers')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -171,24 +170,23 @@ export default function AdminToolbar({
               disabled={loading || actionLoading}
             >
               <UserMinus className="h-4 w-4 mr-2" />
-              Demote
+              {t('admin.demote')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Demote from Admin</AlertDialogTitle>
+              <AlertDialogTitle>{t('admin.demoteFromAdmin')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to demote {selectedCount} user{selectedCount !== 1 ? 's' : ''} from admin role? 
-                They will lose admin privileges.
+                {t('admin.demoteUsersConfirm', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => handleAction(onDemoteUsers, 'demote')}
                 disabled={actionLoading === 'demote'}
               >
-                {actionLoading === 'demote' ? 'Demoting...' : 'Demote Users'}
+                {actionLoading === 'demote' ? t('admin.demoting') : t('admin.demoteUsers')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -203,25 +201,24 @@ export default function AdminToolbar({
               disabled={loading || actionLoading}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              {t('admin.delete')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Users</AlertDialogTitle>
+              <AlertDialogTitle>{t('admin.deleteUsers')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to permanently delete {selectedCount} user{selectedCount !== 1 ? 's' : ''}? 
-                This action cannot be undone and will remove all associated data.
+                {t('admin.deleteUsersConfirm', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => handleAction(onDeleteUsers, 'delete')}
                 disabled={actionLoading === 'delete'}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {actionLoading === 'delete' ? 'Deleting...' : 'Delete Users'}
+                {actionLoading === 'delete' ? t('admin.deleting') : t('admin.deleteUsers')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

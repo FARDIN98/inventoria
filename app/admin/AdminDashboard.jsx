@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import UserManagementTable from '@/components/admin/UserManagementTable'
 import AdminToolbar from '@/components/admin/AdminToolbar'
@@ -10,6 +11,7 @@ import useAuthStore from '@/lib/stores/auth'
 import useAdminStore from '@/lib/stores/admin'
 
 export default function AdminDashboard() {
+  const { t } = useTranslation()
   const {
     users,
     selectedUsers,
@@ -36,7 +38,7 @@ export default function AdminDashboard() {
         // Check if user has admin permission
         const adminCheck = await checkAdminPermission()
         if (!adminCheck.success || !adminCheck.isAdmin) {
-          toast.error('Access denied: Admin privileges required')
+          toast.error(t('admin.accessDenied'))
           router.push('/dashboard')
           return
         }
@@ -45,7 +47,7 @@ export default function AdminDashboard() {
         await checkAdminStatus()
         await loadAllUsers()
       } catch (err) {
-        toast.error('Failed to load admin dashboard')
+        toast.error(t('admin.failedToLoad'))
       }
     }
 
@@ -118,7 +120,7 @@ export default function AdminDashboard() {
     return (
       <div className="rounded-md border">
         <div className="p-8 text-center">
-          <p className="text-muted-foreground">Loading admin dashboard...</p>
+          <p className="text-muted-foreground">{t('admin.loadingDashboard')}</p>
         </div>
       </div>
     )
@@ -133,7 +135,7 @@ export default function AdminDashboard() {
             onClick={() => window.location.reload()} 
             className="text-primary hover:underline"
           >
-            Try again
+            {t('admin.tryAgain')}
           </button>
         </div>
       </div>
@@ -160,7 +162,7 @@ export default function AdminDashboard() {
       
       {users.length > 0 && (
         <div className="text-sm text-muted-foreground text-center pt-4">
-          Total: {users.length} user{users.length !== 1 ? 's' : ''}
+          {t('admin.totalUsers', { count: users.length })}
         </div>
       )}
     </div>

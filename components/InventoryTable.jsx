@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useTranslation } from 'react-i18next'
 import {
   Table,
   TableBody,
@@ -12,11 +13,13 @@ import {
 } from '@/components/ui/table'
 
 export default function InventoryTable({ data, title }) {
+  const { t } = useTranslation()
+  
   if (!data || data.length === 0) {
     return (
       <div className="rounded-md border">
         <div className="p-8 text-center">
-          <p className="text-muted-foreground">No inventories found.</p>
+          <p className="text-muted-foreground">{t('common.noInventoriesFound')}</p>
         </div>
       </div>
     )
@@ -27,9 +30,9 @@ export default function InventoryTable({ data, title }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[300px]">Title</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="w-[200px]">Creator</TableHead>
+            <TableHead className="w-[300px]">{t('forms.title')}</TableHead>
+        <TableHead>{t('forms.description')}</TableHead>
+        <TableHead className="w-[200px]">{t('common.creator')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -54,7 +57,7 @@ export default function InventoryTable({ data, title }) {
               </TableCell>
               <TableCell>
                 <div className="text-sm font-medium text-foreground">
-                  {inventory.users?.name || inventory.users?.email || 'Unknown'}
+                  {inventory.users?.name || inventory.users?.email || t('common.unknown')}
                 </div>
               </TableCell>
             </TableRow>

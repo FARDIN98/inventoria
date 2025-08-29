@@ -1,13 +1,17 @@
 "use client"
 
 import Link from "next/link"
-import { Search, Settings } from "lucide-react"
+import { Search, Settings, Menu, X } from "lucide-react"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import useAuthStore from "@/lib/stores/auth"
 import { useEffect, useState } from "react"
 import { checkAdminPermission } from "@/lib/admin-actions"
+import dynamic from "next/dynamic"
+import { useTranslation } from "react-i18next"
+
+const LanguageSwitcher = dynamic(() => import('../LanguageSwitcher'), { ssr: false })
 
 /**
  * Global Header component with navigation, search, and theme toggle
@@ -16,8 +20,10 @@ import { checkAdminPermission } from "@/lib/admin-actions"
  * @returns {JSX.Element} Complete header component with all navigation elements
  */
 export function Header() {
+  const { t } = useTranslation()
   const { user, loading, initialize, signOut } = useAuthStore()
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Initialize auth state on component mount
   useEffect(() => {
@@ -62,36 +68,23 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search inventories..."
-                className="pl-10 w-full"
-                aria-label="Search inventories"
+                placeholder={t('search.placeholder')}
+              className="pl-10 w-full"
+              aria-label={t('search.ariaLabel')}
               />
             </div>
           </div>
           
-          {/* Navigation Actions */}
-          <nav className="flex items-center space-x-2">
-            {/* Mobile Search Button - Visible only on mobile and when not authenticated */}
-            {!user && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden h-9 w-9"
-                aria-label="Search"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-            )}
-            
+          {/* Desktop Navigation Actions */}
+          <nav className="hidden md:flex items-center space-x-2">
             {/* Navigation Links for authenticated users */}
             {user && (
               <div className="flex items-center space-x-2">
-                
                 {isAdmin && (
                   <Button asChild variant="ghost" size="sm">
                     <Link href="/admin" className="flex items-center gap-1">
                       <Settings className="h-4 w-4" />
-                      Admin
+                      {t('navigation.admin')}
                     </Link>
                   </Button>
                 )}
@@ -111,32 +104,120 @@ export function Header() {
                   size="sm"
                   onClick={handleLogout}
                 >
-                  Log out
+                  {t('navigation.logOut')}
                 </Button>
               </div>
             ) : (
               <Button asChild variant="outline">
-                <Link href="/login">Log in</Link>
+                <Link href="/login">{t('navigation.logIn')}</Link>
               </Button>
             )}
+            
+            {/* Language Switcher */}
+            <div className="ml-3 md:ml-4">
+              <LanguageSwitcher />
+            </div>
             
             {/* Theme Toggle */}
             <ThemeToggle />
           </nav>
-        </div>
-        
-        {/* Mobile Search Bar - Visible only on mobile when needed */}
-        <div className="md:hidden pb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search inventories..."
-              className="pl-10 w-full"
-              aria-label="Search inventories"
-            />
+          
+          {/* Mobile Navigation */}
+          <div className="md:hidden flex items-center space-x-2">
+            {/* Language Switcher - Always visible on mobile */}
+            <LanguageSwitcher />
+            
+            {/* Theme Toggle - Always visible on mobile */}
+            <ThemeToggle />
+            
+            {/* Hamburger Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={t('actions.toggleMobileMenu')}
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <Menu className="h-4 w-4" />
+              )}
+            </Button>
           </div>
         </div>
+        
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t bg-background/95 backdrop-blur">
+            <div className="px-4 py-4 space-y-3">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder={t('search.placeholder')}
+                  className="pl-10 w-full"
+                  aria-label={t('search.ariaLabel')}
+                />
+              </div>
+              
+              {/* Navigation Items */}
+              <div className="space-y-2">
+                {user ? (
+                  <>
+                    {/* Admin Link */}
+                    {isAdmin && (
+                      <Button asChild variant="ghost" className="w-full justify-start">
+                        <Link href="/admin" className="flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+                          <Settings className="h-4 w-4" />
+                          {t('navigation.admin')}
+                        </Link>
+                      </Button>
+                    )}
+                    
+                    {/* User Info */}
+                    <div className="px-3 py-2 text-sm font-medium text-foreground border rounded-md">
+                      {user.user_metadata?.name || user.name || user.email}
+                    </div>
+                    
+                    {/* Logout Button */}
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => {
+                        handleLogout()
+                        setIsMobileMenuOpen(false)
+                      }}
+                    >
+                      {t('navigation.logOut')}
+                    </Button>
+                  </>
+                ) : (
+                  /* Login Button */
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>{t('navigation.logIn')}</Link>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Mobile Search Bar - Visible only on mobile when menu is closed and not authenticated */}
+        {!isMobileMenuOpen && !user && (
+          <div className="md:hidden pb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder={t('search.placeholder')}
+                className="pl-10 w-full"
+                aria-label={t('search.ariaLabel')}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </header>
   )

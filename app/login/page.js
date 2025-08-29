@@ -1,13 +1,18 @@
+"use client"
+
 import AuthForm from "@/components/AuthForm"
+import { useTranslation } from 'react-i18next'
 
 export default function LoginPage() {
+  const { t } = useTranslation()
+  
   return (
     <AuthForm
-      title="Sign in to your account"
-      description="Enter your email and password to access your account"
-      submitText="Sign In"
-      linkLabel="Don't have an account?"
-      linkText="Register"
+      title={t('auth.signInTitle')}
+      description={t('auth.signInDescription')}
+      submitText={t('auth.signIn')}
+      linkLabel={t('auth.noAccountLabel')}
+      linkText={t('auth.register')}
       linkHref="/register"
       showSocialLogin={true}
       isLogin={true}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import useAuthStore from '@/lib/stores/auth';
 import useInventoryStore from '@/lib/stores/inventory';
@@ -14,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Edit, Trash2, Eye, EyeOff, Shield } from 'lucide-react';
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { user, isLoading } = useAuthStore();
   const {
     inventories,
@@ -177,7 +179,7 @@ export default function DashboardPage() {
     return (
       <div className="container mx-auto py-8">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-lg">Loading...</div>
+          <div className="text-lg">{t('common.loading')}</div>
         </div>
       </div>
     );
@@ -190,7 +192,7 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
-              {isAdmin ? 'All Inventories' : 'My Inventories'}
+              {isAdmin ? t('dashboard.adminTitle') : t('dashboard.title')}
             </h1>
             {isAdmin && (
               <Shield className="h-6 w-6 text-amber-500" title="Admin View" />
@@ -198,15 +200,15 @@ export default function DashboardPage() {
           </div>
           <p className="text-muted-foreground">
             {isAdmin 
-              ? 'Admin view: Manage all inventories in the system'
-              : 'Manage and track your inventory items'
+              ? t('dashboard.adminDescription')
+        : t('dashboard.description')
             }
           </p>
         </div>
         <Link href="/inventory/create">
           <Button className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Create New Inventory
+            {t('actions.createNew')}
           </Button>
         </Link>
       </div>
@@ -229,34 +231,34 @@ export default function DashboardPage() {
                   disabled={selectedInventories.size !== 1}
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  Edit
+                  {t('actions.edit')}
                 </Button>
                 <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                   <AlertDialogTrigger asChild>
                     <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={selectedInventories.size === 0}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete ({selectedInventories.size})
-                    </Button>
+                        variant="outline"
+                        size="sm"
+                        disabled={selectedInventories.size === 0}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {t('actions.delete')} ({selectedInventories.size})
+                      </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the selected inventory(ies) and all associated data.
-                      </AlertDialogDescription>
+                      <AlertDialogTitle>{t('dialogs.deleteTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t('dialogs.deleteDescription', { count: selectedInventories.size })}
+                        </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={handleDeleteSelected}
                         disabled={isDeleting}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
-                        {isDeleting ? 'Deleting...' : 'Delete'}
+                        {isDeleting ? t('actions.deleting') : t('actions.delete')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -279,28 +281,31 @@ export default function DashboardPage() {
       {/* Inventories Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Inventory</CardTitle>
-          <CardDescription>
+          <CardTitle>{t('dashboard.title')}</CardTitle>
+          {/* <CardDescription>
             {inventories && inventories.length > 0 
-              ? `You have ${inventories.length} inventory${inventories.length === 1 ? '' : 's'}`
-              : 'No inventory items found'
+              ? t('dashboard.inventoryCount', { count: inventories.length })
+            : t('dashboard.noInventoryItems')
             }
-          </CardDescription>
+          </CardDescription> */}
         </CardHeader>
         <CardContent>
           {!inventories || inventories.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-muted-foreground mb-4">
                 <div className="text-6xl mb-4">📦</div>
-                <h3 className="text-lg font-semibold mb-2">No inventories yet</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('dashboard.noInventories')}</h3>
                 <p className="text-sm mb-4">
-                  Get started by creating your first inventory item
+                  {isAdmin 
+                    ? t('dashboard.noInventoriesAdmin')
+              : t('dashboard.noInventoriesUser')
+                  }
                 </p>
               </div>
               <Link href="/inventory/create">
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Inventory
+                  {t('actions.createFirst')}
                 </Button>
               </Link>
             </div>
@@ -315,14 +320,14 @@ export default function DashboardPage() {
                       aria-label="Select all inventories"
                     />
                   </TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Tags</TableHead>
-                  {isAdmin && <TableHead>Owner</TableHead>}
-                  <TableHead>Visibility</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t('forms.title')}</TableHead>
+              <TableHead>{t('forms.description')}</TableHead>
+              <TableHead>{t('forms.category')}</TableHead>
+              <TableHead>{t('forms.tags')}</TableHead>
+              <TableHead>{t('common.owner')}</TableHead>
+              <TableHead>{t('common.visibility')}</TableHead>
+              <TableHead>{t('common.created')}</TableHead>
+              <TableHead>{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -347,11 +352,11 @@ export default function DashboardPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="max-w-xs truncate">
-                      {inventory.description || 'No description'}
+                      {inventory.description || t('common.noDescription')}
                     </TableCell>
                     <TableCell>
                       <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                        {inventory.categories?.name || 'Uncategorized'}
+                        {inventory.categories?.name || t('common.uncategorized')}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -366,29 +371,27 @@ export default function DashboardPage() {
                             </span>
                           ))
                         ) : (
-                          <span className="text-muted-foreground text-xs">No tags</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    {isAdmin && (
+                            <span className="text-muted-foreground text-xs">{t('common.noTags')}</span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div className="font-medium">{inventory.users?.name || 'Unknown'}</div>
+                          <div className="font-medium">{inventory.users?.name || t('common.unknown')}</div>
                           <div className="text-muted-foreground">{inventory.users?.email}</div>
                         </div>
                       </TableCell>
-                    )}
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {inventory.isPublic ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
                             <Eye className="h-3 w-3" />
-                            Public
+                            {t('common.public')}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-700/10">
                             <EyeOff className="h-3 w-3" />
-                            Private
+                            {t('common.private')}
                           </span>
                         )}
                       </div>
@@ -405,11 +408,11 @@ export default function DashboardPage() {
                         className="h-8 px-2"
                       >
                         {togglingVisibility.has(inventory.id) ? (
-                          'Updating...'
+                          t('common.updating')
                         ) : inventory.isPublic ? (
-                          <><EyeOff className="h-3 w-3 mr-1" />Make Private</>
+                          <><EyeOff className="h-3 w-3 mr-1" />{t('actions.makePrivate')}</>
                         ) : (
-                          <><Eye className="h-3 w-3 mr-1" />Make Public</>
+                          <><Eye className="h-3 w-3 mr-1" />{t('actions.makePublic')}</>
                         )}
                       </Button>
                     </TableCell>
@@ -428,24 +431,24 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <span className="text-sm text-muted-foreground">
-                  {selectedPublicInventories.size} of {publicInventories.length} selected
+                  {t('common.selectedCount', { selected: selectedPublicInventories.size, total: publicInventories.length })}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (selectedPublicInventories.size === 1) {
-                      const inventoryId = Array.from(selectedPublicInventories)[0];
-                      handleEditPublicInventory(inventoryId);
-                    }
-                  }}
-                  disabled={selectedPublicInventories.size !== 1}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (selectedPublicInventories.size === 1) {
+                        const inventoryId = Array.from(selectedPublicInventories)[0];
+                        handleEditPublicInventory(inventoryId);
+                      }
+                    }}
+                    disabled={selectedPublicInventories.size !== 1}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {t('actions.edit')}
+                  </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -454,18 +457,18 @@ export default function DashboardPage() {
                       disabled={selectedPublicInventories.size === 0}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Delete ({selectedPublicInventories.size})
+                      {t('actions.delete')} ({selectedPublicInventories.size})
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the selected public inventory(ies) and all associated data.
-                      </AlertDialogDescription>
+                      <AlertDialogTitle>{t('dialogs.deleteTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t('dialogs.deleteDescription', { count: selectedPublicInventories.size })}
+                        </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>{t('actions.cancel')}</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={async () => {
                           const deletePromises = Array.from(selectedPublicInventories).map(inventoryId => 
@@ -475,7 +478,7 @@ export default function DashboardPage() {
                         }}
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                       >
-                        Delete
+                        {t('actions.delete')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -490,22 +493,22 @@ export default function DashboardPage() {
       {!isAdmin && (
         <Card>
           <CardHeader>
-            <CardTitle>Public Inventories with Write Access</CardTitle>
-            <CardDescription>
+            <CardTitle>{t('dashboard.publicInventoriesWithAccess')}</CardTitle>
+            {/* <CardDescription>
               {publicInventories && publicInventories.length > 0 
-                ? `You have write access to ${publicInventories.length} public inventor${publicInventories.length === 1 ? "y" : "ies"}`
-                : "No public inventories with write access found"
+                ? t('dashboard.writeAccessCount', { count: publicInventories.length })
+                : t('dashboard.noPublicInventoriesWithAccess')
               }
-            </CardDescription>
+            </CardDescription> */}
           </CardHeader>
           <CardContent>
             {!publicInventories || publicInventories.length === 0 ? (
               <div className="text-center py-8">
                 <div className="text-muted-foreground mb-4">
                   <div className="text-4xl mb-4">🌐</div>
-                  <h3 className="text-lg font-semibold mb-2">No public inventories available</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('dashboard.noPublicInventories')}</h3>
                   <p className="text-sm">
-                    When other users make their inventories public, you will be able to add, edit, and delete items in them.
+                    {t('dashboard.noPublicInventoriesDescription')}
                   </p>
                 </div>
               </div>
@@ -520,12 +523,12 @@ export default function DashboardPage() {
                         aria-label="Select all public inventories"
                       />
                     </TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Tags</TableHead>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead>{t('forms.title')}</TableHead>
+              <TableHead>{t('forms.description')}</TableHead>
+              <TableHead>{t('forms.category')}</TableHead>
+              <TableHead>{t('forms.tags')}</TableHead>
+              <TableHead>{t('common.owner')}</TableHead>
+              <TableHead>{t('common.created')}</TableHead>
                     
                   </TableRow>
                 </TableHeader>
@@ -551,11 +554,11 @@ export default function DashboardPage() {
                         </Link>
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
-                        {inventory.description || 'No description'}
+                        {inventory.description || t('common.noDescription')}
                       </TableCell>
                       <TableCell>
                         <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                          {inventory.categories?.name || 'Uncategorized'}
+                          {inventory.categories?.name || t('common.uncategorized')}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -570,13 +573,13 @@ export default function DashboardPage() {
                               </span>
                             ))
                           ) : (
-                            <span className="text-muted-foreground text-xs">No tags</span>
+                            <span className="text-muted-foreground text-xs">{t('common.noTags')}</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div className="font-medium">{inventory.users?.name || 'Unknown'}</div>
+                          <div className="font-medium">{inventory.users?.name || t('common.unknown')}</div>
                           <div className="text-muted-foreground">{inventory.users?.email}</div>
                         </div>
                       </TableCell>

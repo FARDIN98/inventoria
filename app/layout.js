@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { I18nProvider } from "@/components/providers/i18n-provider";
 import { Header } from "@/components/layout/header";
 
 const geistSans = Geist({
@@ -30,12 +31,14 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen bg-background">
-            <Header />
-            <main className="container mx-auto px-4 py-6 max-w-7xl">
-              {children}
-            </main>
-          </div>
+          <I18nProvider>
+            <div className="min-h-screen bg-background">
+              <Header />
+              <main className="container mx-auto px-4 py-6 max-w-7xl">
+                {children}
+              </main>
+            </div>
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

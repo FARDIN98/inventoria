@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import useAuthStore from '@/lib/stores/auth'
 import { createInventoryAction, getCategoriesAction } from '@/lib/inventory-actions'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,7 @@ import { Loader2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 export default function CreateInventoryPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const { user, loading: authLoading, initialize } = useAuthStore()
   const [categories, setCategories] = useState([])
@@ -137,40 +139,40 @@ export default function CreateInventoryPage() {
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Dashboard
+          {t('pages.createInventory.backToDashboard')}
         </Link>
-        <h1 className="text-3xl font-bold">Create New Inventory</h1>
+        <h1 className="text-3xl font-bold">{t('pages.createInventory.title')}</h1>
         <p className="text-muted-foreground mt-2">
-          Create a new inventory to organize and manage your items.
+          {t('pages.createInventory.subtitle')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Inventory Details</CardTitle>
+          <CardTitle>{t('pages.createInventory.cardTitle')}</CardTitle>
           <CardDescription>
-            Fill in the basic information for your new inventory.
+            {t('pages.createInventory.cardDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Title Field */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">{t('forms.title')} *</Label>
               <Input
                 id="title"
                 {...register('title', { 
-                  required: 'Title is required',
+                  required: t('forms.validation.titleRequired'),
                   minLength: {
                     value: 3,
-                    message: 'Title must be at least 3 characters'
+                    message: t('forms.validation.titleMinLength')
                   },
                   maxLength: {
                     value: 100,
-                    message: 'Title must be less than 100 characters'
+                    message: t('forms.validation.titleMaxLength')
                   }
                 })}
-                placeholder="Enter inventory title"
+                placeholder={t('forms.placeholder.title')}
                 className={errors.title ? 'border-red-500' : ''}
               />
               {errors.title && (
@@ -180,16 +182,16 @@ export default function CreateInventoryPage() {
 
             {/* Description Field */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('forms.description')}</Label>
               <Textarea
                 id="description"
                 {...register('description', {
                   maxLength: {
                     value: 500,
-                    message: 'Description must be less than 500 characters'
+                    message: t('forms.validation.descriptionMaxLength')
                   }
                 })}
-                placeholder="Describe your inventory (optional)"
+                placeholder={t('forms.placeholder.description')}
                 rows={4}
                 className={errors.description ? 'border-red-500' : ''}
               />
@@ -200,11 +202,11 @@ export default function CreateInventoryPage() {
 
             {/* Category Field */}
             <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
+              <Label htmlFor="category">{t('forms.category')} *</Label>
               {loadingCategories ? (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">Loading categories...</span>
+                  <span className="text-sm text-muted-foreground">{t('pages.createInventory.loadingCategories')}</span>
                 </div>
               ) : (
                 <Select
@@ -212,7 +214,7 @@ export default function CreateInventoryPage() {
                   onValueChange={(value) => setValue('categoryId', value)}
                 >
                   <SelectTrigger className={errors.categoryId ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder={t('forms.placeholder.category')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -224,20 +226,20 @@ export default function CreateInventoryPage() {
                 </Select>
               )}
               {!watchedCategoryId && (
-                <p className="text-sm text-red-500">Category is required</p>
+                <p className="text-sm text-red-500">{t('forms.validation.categoryRequired')}</p>
               )}
             </div>
 
             {/* Tags Field */}
             <div className="space-y-2">
-              <Label htmlFor="tags">Tags</Label>
+              <Label htmlFor="tags">{t('forms.tags')}</Label>
               <div className="space-y-2">
                 <div className="flex space-x-2">
                   <Input
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyPress={handleTagKeyPress}
-                    placeholder="Add tags (press Enter or comma to add)"
+                    placeholder={t('forms.placeholder.tags')}
                     disabled={tags.length >= 10}
                   />
                   <Button
@@ -246,7 +248,7 @@ export default function CreateInventoryPage() {
                     onClick={addTag}
                     disabled={!tagInput.trim() || tags.length >= 10}
                   >
-                    Add
+                    {t('actions.add')}
                   </Button>
                 </div>
                 {tags.length > 0 && (
@@ -269,7 +271,7 @@ export default function CreateInventoryPage() {
                   </div>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  {tags.length}/10 tags added
+                  {t('pages.createInventory.tagsAdded', { count: tags.length })}
                 </p>
               </div>
             </div>
@@ -289,7 +291,7 @@ export default function CreateInventoryPage() {
                 onClick={() => router.push('/dashboard')}
                 disabled={isSubmitting}
               >
-                Cancel
+                {t('actions.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -298,10 +300,10 @@ export default function CreateInventoryPage() {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Creating...
+                    {t('pages.createInventory.creating')}
                   </>
                 ) : (
-                  'Create Inventory'
+                  t('pages.createInventory.createInventory')
                 )}
               </Button>
             </div>

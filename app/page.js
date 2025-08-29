@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from 'react-i18next'
 import Link from 'next/link'
 import useAuthStore from '@/lib/stores/auth'
 import useHomeStore from '@/lib/stores/home'
@@ -10,6 +11,7 @@ import TagCloud from '@/components/TagCloud'
 import { Button } from '@/components/ui/button'
 
 export default function HomePage() {
+  const { t } = useTranslation()
   const { user, loading, initialize } = useAuthStore()
   const {
     homeData,
@@ -48,13 +50,13 @@ export default function HomePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-destructive mb-4">Error Loading Data</h2>
+          <h2 className="text-2xl font-bold text-destructive mb-4">{t('home.errorLoadingData')}</h2>
           <p className="text-muted-foreground mb-4">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
           >
-            Retry
+            {t('home.retry')}
           </button>
         </div>
       </div>
@@ -70,11 +72,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
-              Welcome to Inventoria
+              {t('home.welcome')}
             </h1>
             <p className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
-              Discover and explore amazing inventory collections from creators around the world. 
-              Join our community to create and share your own collections.
+              {t('home.description')}
             </p>
           </div>
         </div>
@@ -86,7 +87,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto text-center">
             <Link href="/dashboard">
               <Button size="lg" className="px-8 py-3">
-                Go To Dashboard
+                {t('home.goToDashboard')}
               </Button>
             </Link>
           </div>
@@ -98,15 +99,15 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">
-              Latest Inventories
+              {t('home.latestInventories')}
             </h2>
             <p className="text-muted-foreground">
-              Recently created inventory collections
+              {t('home.latestInventoriesDescription')}
             </p>
           </div>
           <InventoryTable 
             data={getLatestInventories()} 
-            title="Latest Inventories"
+            title={t('home.latestInventories')}
           />
         </div>
       </section>
@@ -118,15 +119,15 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">
-              Top 5 Popular Inventories
+              {t('home.popularInventories')}
             </h2>
             <p className="text-muted-foreground">
-              Most viewed and liked inventory collections
+              {t('home.popularInventoriesDescription')}
             </p>
           </div>
           <InventoryTable 
             data={getPopularInventories()} 
-            title="Top 5 Popular Inventories"
+            title={t('home.popularInventories')}
           />
         </div>
       </section>
@@ -136,10 +137,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-8 text-center">
             <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">
-              Popular Tags
+              {t('home.popularTags')}
             </h2>
             <p className="text-muted-foreground">
-              Explore collections by popular categories
+              {t('home.popularTagsDescription')}
             </p>
           </div>
           <TagCloud tags={getPopularTags()} />
@@ -150,23 +151,23 @@ export default function HomePage() {
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/50">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground mb-4">
-            Ready to Start Your Collection?
+            {t('home.ctaTitle')}
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Join thousands of collectors and create your own inventory collections today.
+            {t('home.ctaDescription')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a 
               href="/register" 
               className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             >
-              Get Started
+              {t('home.getStarted')}
             </a>
             <a 
               href="/login" 
               className="inline-flex items-center justify-center rounded-md border border-input bg-background px-8 py-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             >
-              Sign In
+              {t('home.signIn')}
             </a>
           </div>
         </div>

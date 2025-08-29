@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -24,6 +25,7 @@ export default function ItemDialog({
   item = null, // null for add, item object for edit
   onSuccess 
 }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -127,11 +129,11 @@ export default function ItemDialog({
         onSuccess?.(result.item);
         onOpenChange(false);
       } else {
-        setError(result.error || 'An error occurred');
+        setError(result.error || t('errors.generic'));
       }
     } catch (err) {
       console.error('Error submitting form:', err);
-      setError('An unexpected error occurred');
+      setError(t('errors.unexpected'));
     } finally {
       setLoading(false);
     }
@@ -142,12 +144,12 @@ export default function ItemDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? 'Edit Item' : 'Add New Item'}
+            {isEdit ? t('pages.itemDialog.editTitle') : t('pages.itemDialog.addTitle')}
           </DialogTitle>
           <DialogDescription>
             {isEdit 
-              ? 'Update the item details below.' 
-              : 'Fill in the details for the new item.'}
+              ? t('pages.itemDialog.editDescription') 
+              : t('pages.itemDialog.addDescription')}
           </DialogDescription>
         </DialogHeader>
 
@@ -155,31 +157,31 @@ export default function ItemDialog({
           {/* Custom ID - Required */}
           <div className="space-y-2">
             <Label htmlFor="customId" className="text-sm font-medium">
-              Custom ID <span className="text-destructive">*</span>
+              {t('forms.customId')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="customId"
               value={formData.customId}
               onChange={(e) => handleInputChange('customId', e.target.value)}
-              placeholder="Enter unique item ID"
+              placeholder={t('forms.placeholder.customId')}
               required
             />
           </div>
 
           {/* Text Fields */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground">Text Fields</h4>
+            <h4 className="text-sm font-medium text-muted-foreground">{t('forms.textFields')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[1, 2, 3].map((num) => (
                 <div key={`text${num}`} className="space-y-2">
                   <Label htmlFor={`text${num}`} className="text-sm">
-                    Text {num}
+                    {t('forms.labels.text', { number: num })}
                   </Label>
                   <Input
                     id={`text${num}`}
                     value={formData[`text${num}`]}
                     onChange={(e) => handleInputChange(`text${num}`, e.target.value)}
-                    placeholder={`Text field ${num}`}
+                    placeholder={t('forms.placeholder.textField', { number: num })}
                   />
                 </div>
               ))}
@@ -188,18 +190,18 @@ export default function ItemDialog({
 
           {/* Textarea Fields */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground">Large Text Fields</h4>
+            <h4 className="text-sm font-medium text-muted-foreground">{t('forms.largeTextFields')}</h4>
             <div className="space-y-4">
               {[1, 2, 3].map((num) => (
                 <div key={`textArea${num}`} className="space-y-2">
                   <Label htmlFor={`textArea${num}`} className="text-sm">
-                    Large Text {num}
+                    {t('forms.labels.largeText', { number: num })}
                   </Label>
                   <Textarea
                     id={`textArea${num}`}
                     value={formData[`textArea${num}`]}
                     onChange={(e) => handleInputChange(`textArea${num}`, e.target.value)}
-                    placeholder={`Large text field ${num}`}
+                    placeholder={t('forms.placeholder.largeTextField', { number: num })}
                     rows={3}
                   />
                 </div>
@@ -209,12 +211,12 @@ export default function ItemDialog({
 
           {/* Numeric Fields */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground">Numeric Fields</h4>
+            <h4 className="text-sm font-medium text-muted-foreground">{t('forms.numericFields')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[1, 2, 3].map((num) => (
                 <div key={`num${num}`} className="space-y-2">
                   <Label htmlFor={`num${num}`} className="text-sm">
-                    Number {num}
+                    {t('forms.labels.number', { number: num })}
                   </Label>
                   <Input
                     id={`num${num}`}
@@ -222,7 +224,7 @@ export default function ItemDialog({
                     step="any"
                     value={formData[`num${num}`]}
                     onChange={(e) => handleInputChange(`num${num}`, e.target.value)}
-                    placeholder={`Number ${num}`}
+                    placeholder={t('forms.placeholder.numberField', { number: num })}
                   />
                 </div>
               ))}
@@ -231,18 +233,18 @@ export default function ItemDialog({
 
           {/* Document Fields */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground">Document/URL Fields</h4>
+            <h4 className="text-sm font-medium text-muted-foreground">{t('forms.documentFields')}</h4>
             <div className="space-y-4">
               {[1, 2, 3].map((num) => (
                 <div key={`doc${num}`} className="space-y-2">
                   <Label htmlFor={`doc${num}`} className="text-sm">
-                    Document/URL {num}
+                    {t('forms.labels.document', { number: num })}
                   </Label>
                   <Input
                     id={`doc${num}`}
                     value={formData[`doc${num}`]}
                     onChange={(e) => handleInputChange(`doc${num}`, e.target.value)}
-                    placeholder={`Document or URL ${num}`}
+                    placeholder={t('forms.placeholder.documentField', { number: num })}
                   />
                 </div>
               ))}
@@ -251,7 +253,7 @@ export default function ItemDialog({
 
           {/* Boolean Fields */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground">Boolean Fields</h4>
+            <h4 className="text-sm font-medium text-muted-foreground">{t('forms.booleanFields')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[1, 2, 3].map((num) => (
                 <div key={`bool${num}`} className="flex items-center space-x-2">
@@ -261,7 +263,7 @@ export default function ItemDialog({
                     onCheckedChange={(checked) => handleInputChange(`bool${num}`, checked)}
                   />
                   <Label htmlFor={`bool${num}`} className="text-sm">
-                    Boolean {num}
+                    {t('forms.labels.boolean', { number: num })}
                   </Label>
                 </div>
               ))}
@@ -282,11 +284,11 @@ export default function ItemDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancel
+              {t('actions.cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isEdit ? 'Update Item' : 'Add Item'}
+              {isEdit ? t('pages.itemDialog.updateItem') : t('pages.itemDialog.addItem')}
             </Button>
           </DialogFooter>
         </form>
