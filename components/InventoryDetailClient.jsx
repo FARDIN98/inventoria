@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Edit } from 'lucide-react'
+import { ArrowLeft, Edit, Settings } from 'lucide-react'
 import Link from 'next/link'
 import ItemsTableWrapper from '@/components/ItemsTableWrapper'
 import VisibilityToggle from '@/components/VisibilityToggle'
@@ -50,12 +50,20 @@ export default function InventoryDetailClient({
             canToggle={canToggleVisibility}
           />
           {canEdit && (
-            <Link href={`/inventory/edit?id=${inventory.id}`}>
-              <Button className="flex items-center gap-2">
-                <Edit className="h-4 w-4" />
-                {t('inventory.editInventory')}
-              </Button>
-            </Link>
+            <>
+              <Link href={`/inventory/${inventory.id}/settings/custom-id`}>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Create Custom ID 
+                </Button>
+              </Link>
+              <Link href={`/inventory/edit?id=${inventory.id}`}>
+                <Button className="flex items-center gap-2">
+                  <Edit className="h-4 w-4" />
+                  {t('inventory.editInventory')}
+                </Button>
+              </Link>
+            </>
           )}
         </div>
       </div>
@@ -104,7 +112,7 @@ export default function InventoryDetailClient({
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
             <div>
               <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('common.visibility')}</h3>
               <Badge variant={inventory.isPublic ? 'default' : 'secondary'}>
@@ -121,6 +129,52 @@ export default function InventoryDetailClient({
               <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('inventory.lastUpdated')}</h3>
               <p className="text-sm">{new Date(inventory.updatedAt).toLocaleDateString()}</p>
             </div>
+            
+            <div>
+              <h3 className="font-medium text-sm text-muted-foreground mb-1">Custom ID</h3>
+              {inventory.customIdFormat ? (
+                <div className="bg-muted p-2 rounded text-xs font-mono">
+                  {(() => {
+                    try {
+                      const format = JSON.parse(inventory.customIdFormat);
+                      const elements = format.elements || [];
+                      
+                      if (elements.length === 0) return 'Invalid format';
+                      
+                      // Generate sample ID using exact same logic as CustomIdFormatManager preview
+                      const previewParts = elements.map(element => {
+                        switch (element.type) {
+                          case 'FIXED_TEXT':
+                            return element.value || '';
+                          case 'DATETIME':
+                            return '20240115';
+                          case 'SEQUENCE':
+                            return '001';
+                          case 'GUID':
+                            return '12345678-1234-4123-8123-123456789012';
+                          case 'RANDOM_6DIGIT':
+                            return '123456';
+                          case 'RANDOM_9DIGIT':
+                            return '123456789';
+                          case 'RANDOM_20BIT':
+                            return '524288';
+                          case 'RANDOM_32BIT':
+                            return '2147483648';
+                          default:
+                            return '';
+                        }
+                      });
+                      
+                      return previewParts.join('');
+                    } catch (error) {
+                      return 'Invalid JSON format';
+                    }
+                  })()}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No custom format configured</p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -131,6 +185,7 @@ export default function InventoryDetailClient({
           <ItemsTableWrapper 
             initialItems={items}
             inventoryId={inventory.id}
+            inventory={inventory}
             canEdit={canEdit}
           />
         </CardContent>

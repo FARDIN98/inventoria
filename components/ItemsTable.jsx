@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -30,6 +31,7 @@ import { formatDistanceToNow } from 'date-fns';
 export default function ItemsTable({ 
   items = [], 
   inventoryId, 
+  inventory,
   canEdit = false, 
   onItemsChange 
 }) {
@@ -39,6 +41,7 @@ export default function ItemsTable({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingItem, setDeletingItem] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [selectedItems, setSelectedItems] = useState(new Set());
 
   const handleAddItem = () => {
     setEditingItem(null);
@@ -65,6 +68,7 @@ export default function ItemsTable({
         onItemsChange?.();
         setDeleteDialogOpen(false);
         setDeletingItem(null);
+        setSelectedItems(new Set()); // Clear selection after successful deletion
       } else {
         console.error('Delete failed:', result.error);
         // You might want to show a toast notification here
@@ -76,8 +80,51 @@ export default function ItemsTable({
     }
   };
 
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedItems(new Set(items.map(item => item.id)));
+    } else {
+      setSelectedItems(new Set());
+    }
+  };
+
+  const handleSelectItem = (itemId, checked) => {
+    const newSelected = new Set(selectedItems);
+    if (checked) {
+      newSelected.add(itemId);
+    } else {
+      newSelected.delete(itemId);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  const handleEditSelected = () => {
+    if (selectedItems.size === 1) {
+      const itemId = Array.from(selectedItems)[0];
+      const item = items.find(i => i.id === itemId);
+      if (item) {
+        handleEditItem(item);
+      }
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedItems.size === 1) {
+      const itemId = Array.from(selectedItems)[0];
+      const item = items.find(i => i.id === itemId);
+      if (item) {
+        handleDeleteClick(item);
+      }
+    }
+  };
+
+  const selectedItem = selectedItems.size === 1 ? items.find(i => selectedItems.has(i.id)) : null;
+
   const handleDialogSuccess = () => {
     onItemsChange?.();
+    setDialogOpen(false);
+    setEditingItem(null);
+    setSelectedItems(new Set()); // Clear selection after successful operation
   };
 
   const formatValue = (value, type = 'text') => {
@@ -159,10 +206,50 @@ export default function ItemsTable({
         )}
       </div>
 
+      {/* Items Toolbar */}
+      {canEdit && items.length > 0 && (
+        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">
+              {t('common.selectedCount', { selected: selectedItems.size, total: items.length })}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEditSelected}
+              disabled={selectedItems.size !== 1}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              {t('actions.edit')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeleteSelected}
+              disabled={selectedItems.size !== 1}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {t('actions.delete')}
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
+              {canEdit && (
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedItems.size === items.length && items.length > 0}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all items"
+                  />
+                </TableHead>
+              )}
               <TableHead className="w-[120px]">{t('items.customId')}</TableHead>
             <TableHead>{t('items.text1')}</TableHead>
             <TableHead>{t('items.text2')}</TableHead>
@@ -173,12 +260,20 @@ export default function ItemsTable({
             <TableHead>{t('items.bool1')}</TableHead>
             <TableHead>{t('items.bool2')}</TableHead>
             <TableHead>{t('items.bool3')}</TableHead>
-            {canEdit && <TableHead className="w-[100px]">{t('common.actions')}</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {items.map((item) => (
               <TableRow key={item.id}>
+                {canEdit && (
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedItems.has(item.id)}
+                      onCheckedChange={(checked) => handleSelectItem(item.id, checked)}
+                      aria-label={`Select item ${item.customId}`}
+                    />
+                  </TableCell>
+                )}
                 <TableCell className="font-medium">
                   {item.customId}
                 </TableCell>
@@ -191,26 +286,6 @@ export default function ItemsTable({
                 <TableCell>{formatValue(item.bool1, 'boolean')}</TableCell>
                 <TableCell>{formatValue(item.bool2, 'boolean')}</TableCell>
                 <TableCell>{formatValue(item.bool3, 'boolean')}</TableCell>
-                {canEdit && (
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditItem(item)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClick(item)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                )}
               </TableRow>
             ))}
           </TableBody>
@@ -223,6 +298,7 @@ export default function ItemsTable({
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           inventoryId={inventoryId}
+          inventory={inventory}
           item={editingItem}
           onSuccess={handleDialogSuccess}
         />

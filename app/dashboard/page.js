@@ -233,6 +233,34 @@ export default function DashboardPage() {
                   <Edit className="h-4 w-4 mr-2" />
                   {t('actions.edit')}
                 </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (selectedInventories.size === 1) {
+                      const inventoryId = Array.from(selectedInventories)[0];
+                      handleToggleVisibility(inventoryId);
+                    }
+                  }}
+                  disabled={selectedInventories.size !== 1 || (selectedInventories.size === 1 && (() => {
+                    const inventoryId = Array.from(selectedInventories)[0];
+                    const inventory = inventories.find(inv => inv.id === inventoryId);
+                    return togglingVisibility.has(inventoryId) || (!isAdmin && inventory?.ownerId !== user?.id);
+                  })())}
+                >
+                  {selectedInventories.size === 1 && (() => {
+                    const inventoryId = Array.from(selectedInventories)[0];
+                    const inventory = inventories.find(inv => inv.id === inventoryId);
+                    if (togglingVisibility.has(inventoryId)) {
+                      return t('common.updating');
+                    }
+                    return inventory?.isPublic ? (
+                      <><EyeOff className="h-4 w-4 mr-2" />{t('actions.makePrivate')}</>
+                    ) : (
+                      <><Eye className="h-4 w-4 mr-2" />{t('actions.makePublic')}</>
+                    );
+                  })()}
+                </Button>
                 <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -327,7 +355,6 @@ export default function DashboardPage() {
               <TableHead>{t('common.owner')}</TableHead>
               <TableHead>{t('common.visibility')}</TableHead>
               <TableHead>{t('common.created')}</TableHead>
-              <TableHead>{t('common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -398,23 +425,6 @@ export default function DashboardPage() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(inventory.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleVisibility(inventory.id)}
-                        disabled={togglingVisibility.has(inventory.id) || (!isAdmin && inventory.ownerId !== user?.id)}
-                        className="h-8 px-2"
-                      >
-                        {togglingVisibility.has(inventory.id) ? (
-                          t('common.updating')
-                        ) : inventory.isPublic ? (
-                          <><EyeOff className="h-3 w-3 mr-1" />{t('actions.makePrivate')}</>
-                        ) : (
-                          <><Eye className="h-3 w-3 mr-1" />{t('actions.makePublic')}</>
-                        )}
-                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

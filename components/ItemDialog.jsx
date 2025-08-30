@@ -16,18 +16,21 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { addItemAction, editItemAction } from '@/lib/item-actions';
-import { Loader2 } from 'lucide-react';
+import { validateCustomIdClient, parseIdFormatClient } from '@/lib/utils/custom-id-client-validator';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function ItemDialog({ 
   open, 
   onOpenChange, 
   inventoryId, 
+  inventory = null, // inventory object with customIdFormat
   item = null, // null for add, item object for edit
   onSuccess 
 }) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [customIdValidation, setCustomIdValidation] = useState({ isValid: true, message: '' });
   const [formData, setFormData] = useState({
     customId: '',
     text1: '',
@@ -97,15 +100,52 @@ export default function ItemDialog({
     }
   }, [open, item]);
 
+  // Validate custom ID format
+  const validateCustomIdFormat = (customId) => {
+    if (!inventory?.customIdFormat || !customId.trim()) {
+      setCustomIdValidation({ isValid: true, message: '' });
+      return;
+    }
+
+    try {
+      const parsedFormat = parseIdFormatClient(inventory.customIdFormat);
+      const isValid = validateCustomIdClient(customId.trim(), parsedFormat);
+      
+      if (isValid) {
+        setCustomIdValidation({ isValid: true, message: t('forms.validation.customIdValid') });
+      } else {
+        setCustomIdValidation({ isValid: false, message: t('forms.validation.customIdInvalid') });
+      }
+    } catch (error) {
+      console.error('Custom ID validation error:', error);
+      setCustomIdValidation({ isValid: false, message: t('forms.validation.customIdFormatError') });
+    }
+  };
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (error) setError(''); // Clear error when user starts typing
+    
+    // Validate custom ID format in real-time
+    if (field === 'customId') {
+      validateCustomIdFormat(value);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validate custom ID format before submission
+    if (inventory?.customIdFormat && formData.customId.trim()) {
+      validateCustomIdFormat(formData.customId);
+      if (!customIdValidation.isValid) {
+        setError(t('forms.validation.customIdMustBeValid'));
+        setLoading(false);
+        return;
+      }
+    }
 
     try {
       // Create FormData object
@@ -158,14 +198,44 @@ export default function ItemDialog({
           <div className="space-y-2">
             <Label htmlFor="customId" className="text-sm font-medium">
               {t('forms.customId')} <span className="text-destructive">*</span>
+              {inventory?.customIdFormat && (
+                <span className="text-xs text-muted-foreground ml-2">
+                  ({t('forms.formatValidationEnabled')})
+                </span>
+              )}
             </Label>
-            <Input
-              id="customId"
-              value={formData.customId}
-              onChange={(e) => handleInputChange('customId', e.target.value)}
-              placeholder={t('forms.placeholder.customId')}
-              required
-            />
+            <div className="relative">
+              <Input
+                id="customId"
+                value={formData.customId}
+                onChange={(e) => handleInputChange('customId', e.target.value)}
+                placeholder={t('forms.placeholder.customId')}
+                required
+                className={`pr-8 ${
+                  inventory?.customIdFormat && formData.customId.trim() 
+                    ? customIdValidation.isValid 
+                      ? 'border-green-500 focus:border-green-500' 
+                      : 'border-red-500 focus:border-red-500'
+                    : ''
+                }`}
+              />
+              {inventory?.customIdFormat && formData.customId.trim() && (
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                  {customIdValidation.isValid ? (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                  )}
+                </div>
+              )}
+            </div>
+            {inventory?.customIdFormat && customIdValidation.message && (
+              <p className={`text-xs ${
+                customIdValidation.isValid ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {customIdValidation.message}
+              </p>
+            )}
           </div>
 
           {/* Text Fields */}

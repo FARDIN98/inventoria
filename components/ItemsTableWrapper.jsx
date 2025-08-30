@@ -7,6 +7,7 @@ import { getInventoryItemsAction } from '@/lib/item-actions';
 export default function ItemsTableWrapper({ 
   initialItems = [], 
   inventoryId, 
+  inventory,
   canEdit = false 
 }) {
   const [items, setItems] = useState(initialItems);
@@ -30,6 +31,7 @@ export default function ItemsTableWrapper({
     <ItemsTable 
       items={items}
       inventoryId={inventoryId}
+      inventory={inventory}
       canEdit={canEdit}
       onItemsChange={refreshItems}
     />
