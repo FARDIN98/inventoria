@@ -6,12 +6,13 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeft, Edit, Settings, BarChart3, Database, Wrench } from 'lucide-react'
+import { ArrowLeft, Edit, Settings, BarChart3, Database, Wrench, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import ItemsTableWrapper from '@/components/ItemsTableWrapper'
 import VisibilityToggle from '@/components/VisibilityToggle'
 import CustomFieldsManager from '@/components/CustomFieldsManager'
 import InventoryStats from '@/components/InventoryStats'
+import DiscussionPanel from '@/components/Discussion/DiscussionPanel'
 
 export default function InventoryDetailClient({ 
   inventory, 
@@ -20,20 +21,51 @@ export default function InventoryDetailClient({
   canEdit, 
   canToggleVisibility, 
   isAdmin,
-  currentUserId 
+  currentUserId,
+  initialDiscussionPosts = []
 }) {
   const [currentFieldTemplates, setCurrentFieldTemplates] = useState(fieldTemplates);
   const [refreshKey, setRefreshKey] = useState(0);
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('items')
   
+  // Check if user can manage field settings (owner or admin)
+  const canManageFields = canEdit && (inventory.ownerId === currentUserId || isAdmin)
+  
+  // Discussion permissions
+  const canViewDiscussion = true; // All users can view discussions
+  const canPostDiscussion = currentUserId && (canEdit || inventory.isPublic); // Authenticated users with write access OR public inventory
+  
+  // Current user object for DiscussionPanel
+  const currentUser = currentUserId ? { id: currentUserId } : null;
+  
   // Update field templates when prop changes
   useEffect(() => {
     setCurrentFieldTemplates(fieldTemplates);
   }, [fieldTemplates]);
   
-  // Check if user can manage field settings (owner or admin)
-  const canManageFields = canEdit && (inventory.ownerId === currentUserId || isAdmin)
+  // Deep linking support - set active tab based on URL hash
+  useEffect(() => {
+    const hash = window.location.hash.slice(1); // Remove # from hash
+    if (hash === 'discussion') {
+      setActiveTab('discussion');
+    } else if (hash === 'fields' && canManageFields) {
+      setActiveTab('fields');
+    } else if (hash === 'stats') {
+      setActiveTab('stats');
+    }
+  }, [canManageFields]);
+  
+  // Update URL hash when tab changes
+  const handleTabChange = (value) => {
+    setActiveTab(value);
+    // Update URL hash for deep linking
+    if (value !== 'items') {
+      window.history.replaceState(null, '', `#${value}`);
+    } else {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  };
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -197,11 +229,15 @@ export default function InventoryDetailClient({
       </Card>
 
       {/* Tabbed Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+        <TabsList className={`grid w-full ${canManageFields ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="items" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
             {t('inventory.tabs.items')}
+          </TabsTrigger>
+          <TabsTrigger value="discussion" className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" />
+            {t('inventory.tabs.discussion', 'Discussion')}
           </TabsTrigger>
           {canManageFields && (
             <TabsTrigger value="fields" className="flex items-center gap-2">
@@ -224,6 +260,20 @@ export default function InventoryDetailClient({
                 inventory={inventory}
                 fieldTemplates={currentFieldTemplates}
                 canEdit={canEdit}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="discussion" className="space-y-6">
+          <Card className="h-[600px]">
+            <CardContent className="p-0 h-full">
+              <DiscussionPanel
+                inventoryId={inventory.id}
+                currentUser={currentUser}
+                canPost={canPostDiscussion}
+                initialPosts={initialDiscussionPosts}
+                className="h-full"
               />
             </CardContent>
           </Card>

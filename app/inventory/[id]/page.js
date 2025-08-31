@@ -1,6 +1,7 @@
 import { getInventoryByIdAction, toggleInventoryVisibilityAction } from '@/lib/inventory-actions';
 import { getInventoryItemsAction } from '@/lib/item-actions';
 import { getInventoryFieldTemplatesAction } from '@/lib/field-actions';
+import { getDiscussionPostsAction } from '@/lib/discussion-actions';
 import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,18 @@ export default async function InventoryDetailPage({ params }) {
   const fieldTemplatesResult = await getInventoryFieldTemplatesAction(id);
   const fieldTemplates = fieldTemplatesResult.success ? fieldTemplatesResult.fieldTemplates : [];
 
+  // Get initial discussion posts for SSR (graceful error handling)
+  let initialDiscussionPosts = [];
+  try {
+    const discussionResult = await getDiscussionPostsAction(id);
+    if (discussionResult.success) {
+      initialDiscussionPosts = discussionResult.posts || [];
+    }
+  } catch (error) {
+    // Gracefully handle discussion fetch errors - don't break page load
+    console.warn('Failed to fetch initial discussion posts:', error);
+  }
+
   return (
     <InventoryDetailClient 
       inventory={inventory}
@@ -62,6 +75,7 @@ export default async function InventoryDetailPage({ params }) {
       canToggleVisibility={canToggleVisibility}
       isAdmin={isAdmin}
       currentUserId={user?.id}
+      initialDiscussionPosts={initialDiscussionPosts}
     />
   );
 }
