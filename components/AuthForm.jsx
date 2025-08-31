@@ -58,10 +58,10 @@ export default function AuthForm({
       if (result.success) {
         router.push('/')
       } else {
-        setError(result.error || t('auth.authenticationFailed'))
+        setError(result.error || t('auth.authenticationFailed', 'Authentication failed'))
       }
     } catch (error) {
-      setError(error.message || t('errors.unexpected'))
+      setError(error.message || t('errors.unexpected', 'An unexpected error occurred'))
     } finally {
       setIsSubmitting(false)
     }
@@ -105,12 +105,12 @@ export default function AuthForm({
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('auth.email')}
+                  {t('auth.email', 'Email')}
                 </label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder={t('auth.enterEmail')}
+                  placeholder={t('auth.enterEmail', 'Enter your email')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -120,12 +120,12 @@ export default function AuthForm({
               </div>
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('auth.password')}
+                  {t('auth.password', 'Password')}
                 </label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder={t('auth.enterPassword')}
+                  placeholder={t('auth.enterPassword', 'Enter your password')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -143,7 +143,7 @@ export default function AuthForm({
                 disabled={isSubmitting || loading || !email || !password}
                 className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting || loading ? t('auth.pleaseWait') : submitText}
+                {isSubmitting || loading ? t('auth.pleaseWait', 'Please wait...') : submitText}
               </Button>
             </form>
             
@@ -154,7 +154,7 @@ export default function AuthForm({
                     <span className="w-full border-t border-gray-300 dark:border-gray-600" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">{t('auth.orContinueWith')}</span>
+                    <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">{t('auth.orContinueWith', 'Or continue with')}</span>
                   </div>
                 </div>
                 
