@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAsyncOperation, useFormState } from '@/lib/hooks/useAsyncOperation';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,6 +20,7 @@ import { addItemAction, editItemAction } from '@/lib/item-actions';
 import { validateCustomIdClient, parseIdFormatClient } from '@/lib/utils/custom-id-client-validator';
 import { getFieldColumnName } from '@/lib/utils/custom-fields-utils';
 import { FIELD_TYPES } from '@/lib/utils/custom-fields-constants';
+import { validateFieldData, getFieldInputType } from '@/lib/utils/field-validation-utils';
 import { Loader2, AlertCircle, CheckCircle, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -32,10 +34,28 @@ export default function ItemDialog({
   onSuccess 
 }) {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [customIdValidation, setCustomIdValidation] = useState({ isValid: true, message: '' });
-  const [formData, setFormData] = useState({ customId: '' });
+  
+  // Use reusable hooks for common patterns
+  const { loading, error, execute: executeSubmit } = useAsyncOperation(
+    async (formDataToSubmit) => {
+      if (isEdit) {
+        return await editItemAction(item.id, formDataToSubmit);
+      } else {
+        return await addItemAction(inventoryId, formDataToSubmit);
+      }
+    },
+    {
+      onSuccess: (result) => {
+        if (result.success) {
+          onSuccess?.();
+          onOpenChange(false);
+        }
+      }
+    }
+  );
+  
+  const { formData, setFormData } = useFormState({ customId: '' });
   
   // Helper function to get initial form data
   const getInitialFormData = (itemData = null) => {
@@ -133,68 +153,46 @@ export default function ItemDialog({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
 
     // Validate custom ID format before submission
     if (inventory?.customIdFormat && formData.customId.trim()) {
       validateCustomIdFormat(formData.customId);
       if (!customIdValidation.isValid) {
-        setError(t('forms.validation.customIdMustBeValid'));
-        setLoading(false);
         return;
       }
     }
 
-    try {
-      // Create FormData object
-      const formDataObj = new FormData();
+    // Create FormData object
+    const formDataObj = new FormData();
+    
+    // Add custom ID
+    formDataObj.append('customId', formData.customId);
+    
+    // Add dynamic fields using field_{templateId} naming convention
+    fieldTemplates.forEach(template => {
+      const fieldKey = `field_${template.id}`;
+      const value = formData[fieldKey];
       
-      // Add custom ID
-      formDataObj.append('customId', formData.customId);
-      
-      // Add dynamic fields using field_{templateId} naming convention
-      fieldTemplates.forEach(template => {
-        const fieldKey = `field_${template.id}`;
-        const value = formData[fieldKey];
-        
-        if (template.fieldType === FIELD_TYPES.BOOLEAN) {
-          formDataObj.append(fieldKey, value.toString());
+      if (template.fieldType === FIELD_TYPES.BOOLEAN) {
+        formDataObj.append(fieldKey, value.toString());
+      } else {
+        formDataObj.append(fieldKey, value || '');
+      }
+    });
+    
+    // Add legacy fields for backward compatibility
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key !== 'customId' && !key.startsWith('field_')) {
+        if (key.startsWith('bool')) {
+          formDataObj.append(key, value.toString());
         } else {
-          formDataObj.append(fieldKey, value || '');
+          formDataObj.append(key, value);
         }
-      });
-      
-      // Add legacy fields for backward compatibility
-      Object.entries(formData).forEach(([key, value]) => {
-        if (key !== 'customId' && !key.startsWith('field_')) {
-          if (key.startsWith('bool')) {
-            formDataObj.append(key, value.toString());
-          } else {
-            formDataObj.append(key, value);
-          }
-        }
-      });
-
-      let result;
-      if (isEdit) {
-        result = await editItemAction(item.id, formDataObj, item.version);
-      } else {
-        result = await addItemAction(inventoryId, formDataObj);
       }
+    });
 
-      if (result.success) {
-        onSuccess?.(result.item);
-        onOpenChange(false);
-      } else {
-        setError(result.error || t('errors.generic'));
-      }
-    } catch (err) {
-      console.error('Error submitting form:', err);
-      setError(t('errors.unexpected'));
-    } finally {
-      setLoading(false);
-    }
+    // Use the executeSubmit hook which handles loading, error states, and success callback
+    await executeSubmit(formDataObj);
   };
 
   return (

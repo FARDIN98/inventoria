@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 import {
   DndContext,
   closestCenter,
@@ -16,8 +15,6 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import {
   useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -25,28 +22,27 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  Plus, 
-  Trash2, 
-  GripVertical, 
-  HelpCircle, 
-  Eye, 
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Plus,
+  GripVertical,
+  Trash2,
+  Eye,
   EyeOff,
+  HelpCircle,
+  Save,
   AlertCircle,
-  Info
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
-import { 
-  FIELD_TYPES, 
-  MAX_FIELDS_PER_TYPE,
-  INPUT_TYPE_MAPPING
-} from '@/lib/utils/custom-fields-constants';
-import { bulkSaveFieldTemplatesAction } from '@/lib/field-actions';
+import { FIELD_TYPES, MAX_FIELDS_PER_TYPE } from '@/lib/utils/custom-fields-constants';
+import useFieldTemplatesStore from '@/lib/stores/field-templates';
+import { getFieldInputType } from '@/lib/utils/field-validation-utils';
 
 // Field type descriptions for help popovers
 const FIELD_TYPE_DESCRIPTIONS = {
@@ -286,7 +282,7 @@ function SortableField({ field, index, onUpdate, onRemove, disabled, validationE
             Show in table view
             <Tooltip>
               <TooltipTrigger>
-                <Info className="h-3 w-3 text-muted-foreground" />
+                <HelpCircle className="h-3 w-3 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>When enabled, this field will be displayed in the items table</p>
@@ -299,73 +295,60 @@ function SortableField({ field, index, onUpdate, onRemove, disabled, validationE
   );
 }
 
-// Generate unique ID for fields
-function generateFieldId() {
-  return `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
+
 
 // Main component
 export default function CustomFieldsManager({ 
+  inventoryId, 
   initialFields = [], 
   onFieldsChange,
-  inventoryId = 'sample_inventory' 
+  className = '' 
 }) {
   const { t } = useTranslation();
-  const [fields, setFields] = useState([]);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [fieldTypeCounts, setFieldTypeCounts] = useState({});
-  const [isSaving, setIsSaving] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Zustand store
+  const {
+    fieldTemplates: fields,
+    validationErrors,
+    fieldTypeCounts,
+    saving: isSaving,
+    hasUnsavedChanges,
+    error,
+    setFieldTemplates,
+    addFieldTemplate,
+    updateFieldTemplate,
+    removeFieldTemplate,
+    reorderFieldTemplates,
+    saveFieldTemplates,
+    canAddFieldType,
+    setCurrentInventoryId
+  } = useFieldTemplatesStore();
 
-  // Initialize fields from props
+  // Initialize store with inventory ID and initial fields
   useEffect(() => {
-    if (initialFields && Array.isArray(initialFields)) {
-      const fieldsWithIds = initialFields.map(field => ({
+    if (inventoryId) {
+      setCurrentInventoryId(inventoryId);
+    }
+    
+    if (initialFields && initialFields.length > 0) {
+      const fieldsWithIds = initialFields.map((field, index) => ({
         ...field,
-        id: field.id || generateFieldId(),
-        fieldIndex: field.fieldIndex || 1,
-        isVisible: field.isVisible !== false,
-        displayOrder: field.displayOrder || 0
+        id: field.id || `field_${Date.now()}_${index}`
       }));
-      setFields(fieldsWithIds);
+      setFieldTemplates(fieldsWithIds);
     }
-  }, [initialFields]);
+  }, [inventoryId, initialFields, setCurrentInventoryId, setFieldTemplates]);
 
-  // Update field type counts when fields change
+  // Notify parent component when fields change
   useEffect(() => {
-    const counts = {};
-    Object.values(FIELD_TYPES).forEach(type => {
-      counts[type] = fields.filter(field => field.fieldType === type).length;
-    });
-    setFieldTypeCounts(counts);
-    
-    // Mark as having unsaved changes if fields have been modified
-    if (initialFields.length > 0 || fields.length > 0) {
-      const hasChanges = JSON.stringify(fields) !== JSON.stringify(initialFields.map(field => ({
-        ...field,
-        id: field.id || generateFieldId(),
-        fieldIndex: field.fieldIndex || 1,
-        isVisible: field.isVisible !== false,
-        displayOrder: field.displayOrder || 0
-      })));
-      setHasUnsavedChanges(hasChanges);
-    }
-  }, [fields, initialFields]);
-
-  // Validate fields and update parent component
-  useEffect(() => {
-    const errors = validateFields(fields);
-    setValidationErrors(errors);
-    
-    // Notify parent component with clean field data
     if (onFieldsChange) {
       const cleanFields = fields.map(({ id, ...field }) => ({
         ...field,
         displayOrder: fields.indexOf(fields.find(f => f.id === id))
       }));
-      onFieldsChange(cleanFields, Object.keys(errors).length === 0);
+      onFieldsChange(cleanFields, Object.keys(validationErrors).length === 0);
     }
-  }, [fields, onFieldsChange]);
+  }, [fields, validationErrors, onFieldsChange]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -374,101 +357,39 @@ export default function CustomFieldsManager({
     })
   );
 
-  // Validate all fields
-  const validateFields = (fieldsToValidate) => {
-    const errors = {};
-    const usedPositions = {};
 
-    fieldsToValidate.forEach(field => {
-      const fieldErrors = [];
-
-      // Validate required title
-      if (!field.title || field.title.trim().length === 0) {
-        fieldErrors.push('Field title is required');
-      }
-
-      // Validate field type
-      if (!field.fieldType || !Object.values(FIELD_TYPES).includes(field.fieldType)) {
-        fieldErrors.push('Valid field type is required');
-      }
-
-      // Validate field index
-      if (!field.fieldIndex || field.fieldIndex < 1 || field.fieldIndex > MAX_FIELDS_PER_TYPE) {
-        fieldErrors.push(`Field position must be between 1 and ${MAX_FIELDS_PER_TYPE}`);
-      }
-
-      // Check for duplicate positions within the same type
-      if (field.fieldType && field.fieldIndex) {
-        const positionKey = `${field.fieldType}_${field.fieldIndex}`;
-        if (usedPositions[positionKey]) {
-          fieldErrors.push(`Position ${field.fieldIndex} is already used for ${field.fieldType} fields`);
-        } else {
-          usedPositions[positionKey] = true;
-        }
-      }
-
-      if (fieldErrors.length > 0) {
-        errors[field.id] = fieldErrors;
-      }
-    });
-
-    return errors;
-  };
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      setFields((items) => {
-        const oldIndex = items.findIndex(item => item.id === active.id);
-        const newIndex = items.findIndex(item => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+      const oldIndex = fields.findIndex(item => item.id === active.id);
+      const newIndex = fields.findIndex(item => item.id === over.id);
+      const reorderedFields = arrayMove(fields, oldIndex, newIndex);
+      reorderFieldTemplates(reorderedFields);
     }
   };
 
   const addField = (fieldType = FIELD_TYPES.TEXT) => {
-    // Check if we can add more fields of this type
-    const currentCount = fieldTypeCounts[fieldType] || 0;
-    if (currentCount >= MAX_FIELDS_PER_TYPE) {
-      return;
-    }
-
-    // Find the next available field index for this type
-    const usedIndices = fields
-      .filter(field => field.fieldType === fieldType)
-      .map(field => field.fieldIndex);
-    
-    let nextIndex = 1;
-    while (usedIndices.includes(nextIndex) && nextIndex <= MAX_FIELDS_PER_TYPE) {
-      nextIndex++;
-    }
-
-    const newField = {
-      id: generateFieldId(),
-      fieldType,
-      fieldIndex: nextIndex,
-      title: '',
-      description: '',
-      isVisible: true,
-      displayOrder: fields.length
-    };
-    
-    setFields(prev => [...prev, newField]);
+    addFieldTemplate(fieldType);
   };
 
   const updateField = (index, updatedField) => {
-    setFields(prev => 
-      prev.map((field, i) => i === index ? updatedField : field)
-    );
+    const fieldId = fields[index]?.id;
+    if (fieldId) {
+      updateFieldTemplate(fieldId, updatedField);
+    }
   };
 
   const removeField = (index) => {
-    setFields(prev => prev.filter((_, i) => i !== index));
+    const fieldId = fields[index]?.id;
+    if (fieldId) {
+      removeFieldTemplate(fieldId);
+    }
   };
 
-  const canAddFieldType = (fieldType) => {
-    return (fieldTypeCounts[fieldType] || 0) < MAX_FIELDS_PER_TYPE;
+  const canAddField = (fieldType) => {
+    return canAddFieldType(fieldType);
   };
 
   const getTotalFields = () => fields.length;
@@ -479,38 +400,11 @@ export default function CustomFieldsManager({
     if (isSaving) return;
     
     // Validate fields before saving
-    const errors = validateFields(fields);
-    if (Object.keys(errors).length > 0) {
-      toast.error('Please fix validation errors before saving');
+    if (Object.keys(validationErrors).length > 0) {
       return;
     }
     
-    setIsSaving(true);
-    
-    try {
-      const result = await bulkSaveFieldTemplatesAction(inventoryId, fields);
-      
-      if (result.success) {
-        toast.success('Field templates saved successfully!');
-        setHasUnsavedChanges(false);
-        
-        // Notify parent component of successful save
-        if (onFieldsChange) {
-          const cleanFields = fields.map(({ id, ...field }) => ({
-            ...field,
-            displayOrder: fields.indexOf(fields.find(f => f.id === id))
-          }));
-          onFieldsChange(cleanFields, true, true); // true for isValid, true for isSaved
-        }
-      } else {
-        toast.error(result.error || 'Failed to save field templates');
-      }
-    } catch (error) {
-      console.error('Error saving field templates:', error);
-      toast.error('An unexpected error occurred while saving');
-    } finally {
-      setIsSaving(false);
-    }
+    await saveFieldTemplates();
   };
 
   return (
@@ -538,7 +432,7 @@ export default function CustomFieldsManager({
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             {Object.entries(FIELD_TYPES).map(([key, fieldType]) => {
-              const canAdd = canAddFieldType(fieldType);
+              const canAdd = canAddField(fieldType);
               const count = fieldTypeCounts[fieldType] || 0;
               
               return (
@@ -653,7 +547,7 @@ export default function CustomFieldsManager({
             )}
             {!hasUnsavedChanges && (
               <>
-                <Info className="h-4 w-4 text-green-600" />
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
                 <span className="text-sm text-muted-foreground">
                   All changes saved
                 </span>
@@ -667,11 +561,14 @@ export default function CustomFieldsManager({
           >
             {isSaving ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 Saving...
               </>
             ) : (
-              'Save Changes'
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
+              </>
             )}
           </Button>
         </div>

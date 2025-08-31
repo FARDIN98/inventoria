@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useAsyncOperation } from '@/lib/hooks/useAsyncOperation';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,26 +33,25 @@ const FIELD_TYPE_ICONS = {
 export default function InventoryStats({ inventory, items = [], fieldTemplates = [] }) {
   const { t } = useTranslation();
   const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  
+  const asyncFunction = useMemo(() => async () => {
+    const aggregates = await generateAggregates(items, fieldTemplates);
+    setStats(aggregates);
+    return aggregates;
+  }, [items, fieldTemplates]);
+  
+  const { loading, error, execute: calculateStatsAsync } = useAsyncOperation(
+    asyncFunction,
+    {
+      initialLoading: true,
+      onError: (err) => {
+        console.error('Error calculating statistics:', err);
+      }
+    }
+  );
 
   useEffect(() => {
-    const calculateStats = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const aggregates = await generateAggregates(items, fieldTemplates);
-        setStats(aggregates);
-      } catch (err) {
-        console.error('Error calculating statistics:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    calculateStats();
+    calculateStatsAsync();
   }, [items, fieldTemplates]);
 
   if (loading) {
