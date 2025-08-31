@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useAsyncOperation, useSelection, useDialog } from '@/lib/hooks/useAsyncOperation';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -27,80 +28,72 @@ import { Plus, Edit, Trash2, ExternalLink } from 'lucide-react';
 import ItemDialog from './ItemDialog';
 import { deleteItemAction } from '@/lib/item-actions';
 import { formatDistanceToNow } from 'date-fns';
+import { getFieldColumnName } from '@/lib/utils/custom-fields-utils';
+import { FIELD_TYPES } from '@/lib/utils/custom-fields-constants';
 
 export default function ItemsTable({ 
   items = [], 
   inventoryId, 
   inventory,
+  fieldTemplates = [],
   canEdit = false, 
   onItemsChange 
 }) {
   const { t } = useTranslation();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingItem, setDeletingItem] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [selectedItems, setSelectedItems] = useState(new Set());
+  
+  // Use reusable hooks for common patterns
+  const { open: dialogOpen, openDialog, closeDialog } = useDialog();
+  const { open: deleteDialogOpen, openDialog: openDeleteDialog, closeDialog: closeDeleteDialog } = useDialog();
+  const { selectedSet: selectedItems, selectAll, selectItem, clearSelection, isSelected, selectedCount } = useSelection();
+  const { loading, execute: executeDelete } = useAsyncOperation(
+    async (itemId) => await deleteItemAction(itemId),
+    {
+      onSuccess: () => {
+        onItemsChange?.();
+        closeDeleteDialog();
+        setDeletingItem(null);
+        clearSelection();
+      }
+    }
+  );
 
   const handleAddItem = () => {
     setEditingItem(null);
-    setDialogOpen(true);
+    openDialog();
   };
 
   const handleEditItem = (item) => {
     setEditingItem(item);
-    setDialogOpen(true);
+    openDialog();
   };
 
   const handleDeleteClick = (item) => {
     setDeletingItem(item);
-    setDeleteDialogOpen(true);
+    openDeleteDialog();
   };
 
   const handleDeleteConfirm = async () => {
     if (!deletingItem) return;
-    
-    setLoading(true);
-    try {
-      const result = await deleteItemAction(deletingItem.id);
-      if (result.success) {
-        onItemsChange?.();
-        setDeleteDialogOpen(false);
-        setDeletingItem(null);
-        setSelectedItems(new Set()); // Clear selection after successful deletion
-      } else {
-        console.error('Delete failed:', result.error);
-        // You might want to show a toast notification here
-      }
-    } catch (error) {
-      console.error('Delete error:', error);
-    } finally {
-      setLoading(false);
-    }
+    await executeDelete(deletingItem.id);
   };
 
   const handleSelectAll = (checked) => {
     if (checked) {
-      setSelectedItems(new Set(items.map(item => item.id)));
+      selectAll(items);
     } else {
-      setSelectedItems(new Set());
+      clearSelection();
     }
   };
 
   const handleSelectItem = (itemId, checked) => {
-    const newSelected = new Set(selectedItems);
-    if (checked) {
-      newSelected.add(itemId);
-    } else {
-      newSelected.delete(itemId);
-    }
-    setSelectedItems(newSelected);
+    selectItem(itemId, checked);
   };
 
   const handleEditSelected = () => {
-    if (selectedItems.size === 1) {
-      const itemId = Array.from(selectedItems)[0];
+    if (selectedCount === 1) {
+      const itemId = selectedItems[0];
       const item = items.find(i => i.id === itemId);
       if (item) {
         handleEditItem(item);
@@ -109,8 +102,8 @@ export default function ItemsTable({
   };
 
   const handleDeleteSelected = () => {
-    if (selectedItems.size === 1) {
-      const itemId = Array.from(selectedItems)[0];
+    if (selectedCount === 1) {
+      const itemId = selectedItems[0];
       const item = items.find(i => i.id === itemId);
       if (item) {
         handleDeleteClick(item);
@@ -118,13 +111,39 @@ export default function ItemsTable({
     }
   };
 
-  const selectedItem = selectedItems.size === 1 ? items.find(i => selectedItems.has(i.id)) : null;
+  const selectedItem = selectedCount === 1 ? items.find(i => isSelected(i.id)) : null;
+
+  // Generate dynamic columns based on field templates
+  const visibleFieldTemplates = fieldTemplates.filter(template => template.isVisible);
+  
+  // Helper function to get field value from item
+  const getFieldValue = (item, template) => {
+    const columnName = getFieldColumnName(template.fieldType, template.fieldIndex);
+    return item[columnName];
+  };
+  
+  // Helper function to get field type for formatting
+  const getFieldDisplayType = (fieldType) => {
+    switch (fieldType) {
+      case FIELD_TYPES.TEXT:
+      case FIELD_TYPES.TEXTAREA:
+        return 'text';
+      case FIELD_TYPES.NUMBER:
+        return 'number';
+      case FIELD_TYPES.DOCUMENT:
+        return 'url';
+      case FIELD_TYPES.BOOLEAN:
+        return 'boolean';
+      default:
+        return 'text';
+    }
+  };
 
   const handleDialogSuccess = () => {
     onItemsChange?.();
-    setDialogOpen(false);
+    closeDialog();
     setEditingItem(null);
-    setSelectedItems(new Set()); // Clear selection after successful operation
+    clearSelection(); // Clear selection after successful operation
   };
 
   const formatValue = (value, type = 'text') => {
@@ -184,8 +203,10 @@ export default function ItemsTable({
         {canEdit && (
           <ItemDialog
             open={dialogOpen}
-            onOpenChange={setDialogOpen}
+            onOpenChange={closeDialog}
             inventoryId={inventoryId}
+            inventory={inventory}
+            fieldTemplates={fieldTemplates}
             item={editingItem}
             onSuccess={handleDialogSuccess}
           />
@@ -211,7 +232,7 @@ export default function ItemsTable({
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">
-              {t('common.selectedCount', { selected: selectedItems.size, total: items.length })}
+              {t('common.selectedCount', { selected: selectedCount, total: items.length })}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -219,7 +240,7 @@ export default function ItemsTable({
               variant="outline"
               size="sm"
               onClick={handleEditSelected}
-              disabled={selectedItems.size !== 1}
+              disabled={selectedCount !== 1}
             >
               <Edit className="h-4 w-4 mr-2" />
               {t('actions.edit')}
@@ -228,7 +249,7 @@ export default function ItemsTable({
               variant="outline"
               size="sm"
               onClick={handleDeleteSelected}
-              disabled={selectedItems.size !== 1}
+              disabled={selectedCount !== 1}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {t('actions.delete')}
@@ -244,22 +265,32 @@ export default function ItemsTable({
               {canEdit && (
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={selectedItems.size === items.length && items.length > 0}
+                    checked={selectedCount === items.length && items.length > 0}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all items"
                   />
                 </TableHead>
               )}
               <TableHead className="w-[120px]">{t('items.customId')}</TableHead>
-            <TableHead>{t('items.text1')}</TableHead>
-            <TableHead>{t('items.text2')}</TableHead>
-            <TableHead>{t('items.text3')}</TableHead>
-            <TableHead>{t('items.number1')}</TableHead>
-            <TableHead>{t('items.number2')}</TableHead>
-            <TableHead>{t('items.number3')}</TableHead>
-            <TableHead>{t('items.bool1')}</TableHead>
-            <TableHead>{t('items.bool2')}</TableHead>
-            <TableHead>{t('items.bool3')}</TableHead>
+              {visibleFieldTemplates.map((template) => (
+                <TableHead key={template.id}>
+                  {template.title}
+                </TableHead>
+              ))}
+              {/* Fallback to legacy columns if no field templates */}
+              {visibleFieldTemplates.length === 0 && (
+                <>
+                  <TableHead>{t('items.text1')}</TableHead>
+                  <TableHead>{t('items.text2')}</TableHead>
+                  <TableHead>{t('items.text3')}</TableHead>
+                  <TableHead>{t('items.number1')}</TableHead>
+                  <TableHead>{t('items.number2')}</TableHead>
+                  <TableHead>{t('items.number3')}</TableHead>
+                  <TableHead>{t('items.bool1')}</TableHead>
+                  <TableHead>{t('items.bool2')}</TableHead>
+                  <TableHead>{t('items.bool3')}</TableHead>
+                </>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -268,7 +299,7 @@ export default function ItemsTable({
                 {canEdit && (
                   <TableCell>
                     <Checkbox
-                      checked={selectedItems.has(item.id)}
+                      checked={isSelected(item.id)}
                       onCheckedChange={(checked) => handleSelectItem(item.id, checked)}
                       aria-label={`Select item ${item.customId}`}
                     />
@@ -277,15 +308,29 @@ export default function ItemsTable({
                 <TableCell className="font-medium">
                   {item.customId}
                 </TableCell>
-                <TableCell>{formatValue(item.text1)}</TableCell>
-                <TableCell>{formatValue(item.text2)}</TableCell>
-                <TableCell>{formatValue(item.text3)}</TableCell>
-                <TableCell>{formatValue(item.num1, 'number')}</TableCell>
-                <TableCell>{formatValue(item.num2, 'number')}</TableCell>
-                <TableCell>{formatValue(item.num3, 'number')}</TableCell>
-                <TableCell>{formatValue(item.bool1, 'boolean')}</TableCell>
-                <TableCell>{formatValue(item.bool2, 'boolean')}</TableCell>
-                <TableCell>{formatValue(item.bool3, 'boolean')}</TableCell>
+                {visibleFieldTemplates.map((template) => {
+                  const value = getFieldValue(item, template);
+                  const displayType = getFieldDisplayType(template.fieldType);
+                  return (
+                    <TableCell key={template.id}>
+                      {formatValue(value, displayType)}
+                    </TableCell>
+                  );
+                })}
+                {/* Fallback to legacy columns if no field templates */}
+                {visibleFieldTemplates.length === 0 && (
+                  <>
+                    <TableCell>{formatValue(item.text1)}</TableCell>
+                    <TableCell>{formatValue(item.text2)}</TableCell>
+                    <TableCell>{formatValue(item.text3)}</TableCell>
+                    <TableCell>{formatValue(item.num1, 'number')}</TableCell>
+                    <TableCell>{formatValue(item.num2, 'number')}</TableCell>
+                    <TableCell>{formatValue(item.num3, 'number')}</TableCell>
+                    <TableCell>{formatValue(item.bool1, 'boolean')}</TableCell>
+                    <TableCell>{formatValue(item.bool2, 'boolean')}</TableCell>
+                    <TableCell>{formatValue(item.bool3, 'boolean')}</TableCell>
+                  </>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -296,16 +341,17 @@ export default function ItemsTable({
       {canEdit && (
         <ItemDialog
           open={dialogOpen}
-          onOpenChange={setDialogOpen}
+          onOpenChange={closeDialog}
           inventoryId={inventoryId}
           inventory={inventory}
+          fieldTemplates={fieldTemplates}
           item={editingItem}
           onSuccess={handleDialogSuccess}
         />
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={closeDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Item</AlertDialogTitle>

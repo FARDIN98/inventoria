@@ -68,9 +68,9 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder={t('search.placeholder')}
+                placeholder={t('search.placeholder', 'Search inventories...')}
               className="pl-10 w-full"
-              aria-label={t('search.ariaLabel')}
+              aria-label={t('search.ariaLabel', 'Search inventories')}
               />
             </div>
           </div>
@@ -104,12 +104,12 @@ export function Header() {
                   size="sm"
                   onClick={handleLogout}
                 >
-                  {t('navigation.logOut')}
+                  {t('navigation.logOut', 'Log out')}
                 </Button>
               </div>
             ) : (
               <Button asChild variant="outline">
-                <Link href="/login">{t('navigation.logIn')}</Link>
+                <Link href="/login">{t('navigation.logIn', 'Log in')}</Link>
               </Button>
             )}
             
@@ -136,7 +136,7 @@ export function Header() {
               size="icon"
               className="h-9 w-9"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label={t('actions.toggleMobileMenu')}
+              aria-label={t('actions.toggleMobileMenu', 'Toggle mobile menu')}
             >
               {isMobileMenuOpen ? (
                 <X className="h-4 w-4" />
@@ -156,9 +156,9 @@ export function Header() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder={t('search.placeholder')}
+                  placeholder={t('search.placeholder', 'Search inventories...')}
                   className="pl-10 w-full"
-                  aria-label={t('search.ariaLabel')}
+                  aria-label={t('search.ariaLabel', 'Search inventories')}
                 />
               </div>
               
@@ -171,7 +171,7 @@ export function Header() {
                       <Button asChild variant="ghost" className="w-full justify-start">
                         <Link href="/admin" className="flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
                           <Settings className="h-4 w-4" />
-                          {t('navigation.admin')}
+                          {t('navigation.admin', 'Admin')}
                         </Link>
                       </Button>
                     )}
@@ -190,13 +190,13 @@ export function Header() {
                         setIsMobileMenuOpen(false)
                       }}
                     >
-                      {t('navigation.logOut')}
+                      {t('navigation.logOut', 'Log out')}
                     </Button>
                   </>
                 ) : (
                   /* Login Button */
                   <Button asChild variant="outline" className="w-full">
-                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>{t('navigation.logIn')}</Link>
+                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>{t('navigation.logIn', 'Log in')}</Link>
                   </Button>
                 )}
               </div>
@@ -211,9 +211,9 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder={t('search.placeholder')}
+                placeholder={t('search.placeholder', 'Search inventories...')}
                 className="pl-10 w-full"
-                aria-label={t('search.ariaLabel')}
+                aria-label={t('search.ariaLabel', 'Search inventories')}
               />
             </div>
           </div>

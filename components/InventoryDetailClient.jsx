@@ -1,22 +1,39 @@
 "use client"
 
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Edit, Settings } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ArrowLeft, Edit, Settings, BarChart3, Database, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import ItemsTableWrapper from '@/components/ItemsTableWrapper'
 import VisibilityToggle from '@/components/VisibilityToggle'
+import CustomFieldsManager from '@/components/CustomFieldsManager'
+import InventoryStats from '@/components/InventoryStats'
 
 export default function InventoryDetailClient({ 
   inventory, 
   items, 
+  fieldTemplates = [],
   canEdit, 
   canToggleVisibility, 
-  isAdmin 
+  isAdmin,
+  currentUserId 
 }) {
+  const [currentFieldTemplates, setCurrentFieldTemplates] = useState(fieldTemplates);
+  const [refreshKey, setRefreshKey] = useState(0);
   const { t } = useTranslation()
+  const [activeTab, setActiveTab] = useState('items')
+  
+  // Update field templates when prop changes
+  useEffect(() => {
+    setCurrentFieldTemplates(fieldTemplates);
+  }, [fieldTemplates]);
+  
+  // Check if user can manage field settings (owner or admin)
+  const canManageFields = canEdit && (inventory.ownerId === currentUserId || isAdmin)
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -179,17 +196,72 @@ export default function InventoryDetailClient({
         </CardContent>
       </Card>
 
-      {/* Items Table */}
-      <Card>
-        <CardContent className="pt-6">
-          <ItemsTableWrapper 
-            initialItems={items}
-            inventoryId={inventory.id}
+      {/* Tabbed Content */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="items" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            {t('inventory.tabs.items')}
+          </TabsTrigger>
+          {canManageFields && (
+            <TabsTrigger value="fields" className="flex items-center gap-2">
+              <Wrench className="h-4 w-4" />
+              {t('inventory.tabs.fieldSettings')}
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="stats" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            {t('inventory.tabs.statistics')}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="items" className="space-y-6">
+          <Card>
+            <CardContent className="pt-6">
+              <ItemsTableWrapper 
+                initialItems={items}
+                inventoryId={inventory.id}
+                inventory={inventory}
+                fieldTemplates={currentFieldTemplates}
+                canEdit={canEdit}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {canManageFields && (
+          <TabsContent value="fields" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('inventory.fieldSettings.title')}</CardTitle>
+                <CardDescription>
+                  {t('inventory.fieldSettings.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CustomFieldsManager
+                   initialFields={currentFieldTemplates}
+                   inventoryId={inventory.id}
+                   onFieldsChange={async (fields, isValid, isSaved) => {
+                     if (isSaved) {
+                       // Refresh the page to get updated field templates
+                       window.location.reload();
+                     }
+                   }}
+                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+
+        <TabsContent value="stats" className="space-y-6">
+          <InventoryStats
             inventory={inventory}
-            canEdit={canEdit}
+            items={items}
+            fieldTemplates={currentFieldTemplates}
           />
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
