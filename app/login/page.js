@@ -8,11 +8,11 @@ export default function LoginPage() {
   
   return (
     <AuthForm
-      title={t('auth.signInTitle')}
-      description={t('auth.signInDescription')}
-      submitText={t('auth.signIn')}
-      linkLabel={t('auth.noAccountLabel')}
-      linkText={t('auth.register')}
+      title={t('auth.signInTitle', 'Sign In')}
+      description={t('auth.signInDescription', 'Sign In with your credentials')}
+      submitText={t('auth.signIn', 'Sign In')}
+      linkLabel={t('auth.noAccountLabel', 'No Account?')}
+      linkText={t('auth.register', 'Register')}
       linkHref="/register"
       showSocialLogin={true}
       isLogin={true}

@@ -30,9 +30,9 @@ export default function InventoryTable({ data, title }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[300px]">{t('forms.title')}</TableHead>
-        <TableHead>{t('forms.description')}</TableHead>
-        <TableHead className="w-[200px]">{t('common.creator')}</TableHead>
+            <TableHead className="w-[300px]">{t('forms.title', 'Title')}</TableHead>
+        <TableHead>{t('forms.description', 'Description')}</TableHead>
+        <TableHead className="w-[200px]">{t('common.creator', 'Creator')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
