@@ -180,7 +180,7 @@ export default function InventoryDetailClient({
             </div>
             
             <div>
-              <h3 className="font-medium text-sm text-muted-foreground mb-1">Custom ID</h3>
+              <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('actions.customId')}</h3>
               {inventory.customIdFormat ? (
                 <div className="bg-muted p-2 rounded text-xs font-mono">
                   {(() => {
@@ -221,7 +221,7 @@ export default function InventoryDetailClient({
                   })()}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">No custom format configured</p>
+                <p className="text-sm text-muted-foreground">{t('actions.customFormat')}</p>
               )}
             </div>
           </div>
@@ -233,7 +233,7 @@ export default function InventoryDetailClient({
         <TabsList className={`grid w-full ${canManageFields ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="items" className="flex items-center gap-2">
             <Database className="h-4 w-4" />
-            {t('inventory.tabs.items')}
+            {t('inventory.tabs.items', 'Items')}
           </TabsTrigger>
           <TabsTrigger value="discussion" className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4" />
@@ -242,12 +242,12 @@ export default function InventoryDetailClient({
           {canManageFields && (
             <TabsTrigger value="fields" className="flex items-center gap-2">
               <Wrench className="h-4 w-4" />
-              {t('inventory.tabs.fieldSettings')}
+              {t('inventory.tabs.fieldSettings', 'Field Settings')}
             </TabsTrigger>
           )}
           <TabsTrigger value="stats" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            {t('inventory.tabs.statistics')}
+            {t('inventory.tabs.statistics', 'Statistics')}
           </TabsTrigger>
         </TabsList>
 
@@ -283,12 +283,12 @@ export default function InventoryDetailClient({
         {canManageFields && (
           <TabsContent value="fields" className="space-y-6">
             <Card>
-              <CardHeader>
+              {/* <CardHeader>
                 <CardTitle>{t('inventory.fieldSettings.title')}</CardTitle>
                 <CardDescription>
                   {t('inventory.fieldSettings.description')}
                 </CardDescription>
-              </CardHeader>
+              </CardHeader> */}
               <CardContent>
                 <CustomFieldsManager
                    initialFields={currentFieldTemplates}
