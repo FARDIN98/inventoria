@@ -3,17 +3,22 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  markdownComponents, 
+  remarkPlugins, 
+  getUserInitials, 
+  validatePostContent 
+} from '@/lib/utils/discussion-utils';
 
 import { Textarea } from '@/components/ui/textarea';
 import { Send, AlertCircle, Eye, Edit, Bold, Italic, List, Quote, Code, Link, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
- * Post composer component with MDXEditor integration
+ * Post composer component with markdown editing
  * Provides rich markdown editing experience with toolbar and validation
  */
 export default function PostComposer({ 
@@ -34,67 +39,51 @@ export default function PostComposer({
   const isOverLimit = characterCount > MAX_CHARACTERS;
   const isNearLimit = characterCount > MAX_CHARACTERS * 0.8;
 
-  // Get user initials for avatar fallback
-  const getUserInitials = useCallback((name) => {
-    if (!name) return '?';
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  }, []);
+
 
   // Handle content change
   const handleContentChange = useCallback((newContent) => {
     setContent(newContent);
     if (error) setError(''); // Clear error when user starts typing
   }, [error]);
-
-  // Validate content before submission
+  
+  // Validate content
   const validateContent = useCallback((content) => {
-    const trimmedContent = content.trim();
-    
-    if (!trimmedContent) {
-      return t('discussion.validation.emptyContent', 'Please enter some content before posting.');
+    const validation = validatePostContent(content, MAX_CHARACTERS);
+    if (!validation.isValid) {
+      setError(validation.error);
+      return false;
     }
-    
-    if (trimmedContent.length > MAX_CHARACTERS) {
-      return t('discussion.validation.tooLong', 
-        `Post is too long. Maximum ${MAX_CHARACTERS.toLocaleString()} characters allowed.`
-      );
-    }
-    
-    return null;
-  }, [t]);
+    return true;
+  }, []);
+
+
 
   // Handle form submission
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
-    if (isSubmitting) return;
-    
-    const validationError = validateContent(content);
-    if (validationError) {
-      setError(validationError);
+    if (!validateContent(content)) {
       return;
     }
+    
+    if (isSubmitting) return;
     
     try {
       const result = await onSubmit(content.trim());
       
-      if (result.success) {
-        // Clear content on successful submission
+      if (result?.success) {
         setContent('');
         setError('');
+        setIsEditorOpen(false);
       } else {
-        setError(result.error || t('discussion.submitError', 'Failed to post. Please try again.'));
+        setError(result?.error || t('discussion.submitError', 'Failed to post. Please try again.'));
       }
     } catch (err) {
       console.error('Error submitting post:', err);
       setError(t('discussion.submitError', 'Failed to post. Please try again.'));
     }
-  }, [content, isSubmitting, onSubmit, validateContent, t]);
+  }, [content, validateContent, isSubmitting, onSubmit, t]);
 
   // Markdown formatting functions
   const insertMarkdown = useCallback((before, after = '', placeholder = '') => {
@@ -152,59 +141,7 @@ export default function PostComposer({
     }
   }, [handleSubmit, formatBold, formatItalic]);
 
-  // Markdown components for rendering
-  const markdownComponents = {
-    // Style paragraphs
-    p: ({ children, ...props }) => (
-      <p className="mb-2 last:mb-0" {...props}>
-        {children}
-      </p>
-    ),
-    // Style headings
-    h1: ({ children, ...props }) => (
-      <h1 className="text-xl font-bold mt-4 mb-2 first:mt-0" {...props}>
-        {children}
-      </h1>
-    ),
-    h2: ({ children, ...props }) => (
-      <h2 className="text-lg font-semibold mt-3 mb-2 first:mt-0" {...props}>
-        {children}
-      </h2>
-    ),
-    h3: ({ children, ...props }) => (
-      <h3 className="text-base font-medium mt-2 mb-1 first:mt-0" {...props}>
-        {children}
-      </h3>
-    ),
-    // Style lists
-    ul: ({ children, ...props }) => (
-      <ul className="list-disc list-inside space-y-1 mb-2" {...props}>
-        {children}
-      </ul>
-    ),
-    ol: ({ children, ...props }) => (
-      <ol className="list-decimal list-inside space-y-1 mb-2" {...props}>
-        {children}
-      </ol>
-    ),
-    // Style blockquotes
-    blockquote: ({ children, ...props }) => (
-      <blockquote className="border-l-4 border-muted pl-4 italic text-muted-foreground mb-2" {...props}>
-        {children}
-      </blockquote>
-    ),
-    // Style code
-    code: ({ children, ...props }) => (
-      <code className="bg-muted px-1 py-0.5 rounded text-sm font-mono" {...props}>
-        {children}
-      </code>
-    ),
-    pre: ({ children, ...props }) => (
-      <pre className="bg-muted p-3 rounded-md overflow-x-auto mb-2" {...props}>
-        {children}
-      </pre>
-    )
-  };
+
 
   // Don't render if user is not authenticated
   if (!currentUser) {
@@ -372,7 +309,7 @@ export default function PostComposer({
                       <div className="p-3 min-h-[60px] max-h-[200px] overflow-y-auto">
                         <div className="prose prose-sm max-w-none dark:prose-invert">
                           <ReactMarkdown 
-                            remarkPlugins={[remarkGfm]}
+                            remarkPlugins={remarkPlugins}
                             components={markdownComponents}
                           >
                             {content}

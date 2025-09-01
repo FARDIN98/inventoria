@@ -1,12 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle, MessageCircle, RefreshCw, Wifi, WifiOff } from 'lucide-react';
-import { useRealtimeDiscussion } from '@/lib/hooks/useRealtimeDiscussion';
+import useDiscussionStore from '@/lib/stores/discussion';
+import { 
+  isLoadingState, 
+  isConnectedState, 
+  isErrorState, 
+  isReconnectingState 
+} from '@/lib/utils/discussion-utils';
 import DiscussionPost from './DiscussionPost';
 import PostComposer from './PostComposer';
 
@@ -23,27 +29,58 @@ export default function DiscussionPanel({
 }) {
   const { t } = useTranslation();
   
+  const scrollContainerRef = useRef(null);
+  
   const {
-    posts,
-    isLoading,
-    isConnected,
-    isError,
-    isReconnecting,
-    isSubmitting,
-    error,
+    getPostsForInventory,
+    getConnectionState,
+    getError,
+    getSubmittingState,
+    initializeInventory,
+    fetchInitialPosts,
+    setupRealtimeSubscription,
     addPost,
     deletePost,
     retryConnection,
-    scrollContainerRef
-  } = useRealtimeDiscussion(inventoryId, {
-    autoScroll: true,
-    scrollThreshold: 100,
-    initialPosts
-  });
+    setScrollRef,
+    cleanupInventory
+  } = useDiscussionStore();
+  
+  // Get current state for this inventory
+  const posts = getPostsForInventory(inventoryId);
+  const connectionState = getConnectionState(inventoryId);
+  const error = getError(inventoryId);
+  const isSubmitting = getSubmittingState(inventoryId);
+  
+  // Derived state
+  const isLoading = isLoadingState(connectionState);
+  const isConnected = isConnectedState(connectionState);
+  const isError = isErrorState(connectionState);
+  const isReconnecting = isReconnectingState(connectionState);
+  
+  // Initialize and setup subscription
+  useEffect(() => {
+    if (!inventoryId) return;
+    
+    // Initialize inventory data
+    initializeInventory(inventoryId);
+    
+    // Set scroll ref
+    setScrollRef(inventoryId, scrollContainerRef);
+    
+    // Fetch initial posts and setup subscription
+    fetchInitialPosts(inventoryId, initialPosts);
+    setupRealtimeSubscription(inventoryId, { autoScroll: true });
+    
+    // Cleanup on unmount
+    return () => {
+      cleanupInventory(inventoryId);
+    };
+  }, [inventoryId, initialPosts, initializeInventory, setScrollRef, fetchInitialPosts, setupRealtimeSubscription, cleanupInventory]);
 
   // Handle post submission from composer
   const handlePostSubmit = async (content) => {
-    const result = await addPost(content);
+    const result = await addPost(inventoryId, content);
     return result;
   };
 
@@ -51,6 +88,11 @@ export default function DiscussionPanel({
   const handlePostDelete = async (postId) => {
     const result = await deletePost(postId);
     return result;
+  };
+  
+  // Handle retry connection
+  const handleRetryConnection = () => {
+    retryConnection(inventoryId, { autoScroll: true });
   };
 
   // Connection status indicator
@@ -63,7 +105,7 @@ export default function DiscussionPanel({
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={retryConnection}
+            onClick={handleRetryConnection}
             className="h-6 px-2"
           >
             <RefreshCw className="h-3 w-3 mr-1" />
@@ -145,7 +187,7 @@ export default function DiscussionPanel({
       <p className="text-muted-foreground mb-4">
         {error || t('discussion.errorDescription', 'Something went wrong while loading the discussion.')}
       </p>
-      <Button onClick={retryConnection} variant="outline">
+      <Button onClick={handleRetryConnection} variant="outline">
         <RefreshCw className="h-4 w-4 mr-2" />
         {t('actions.retry', 'Try again')}
       </Button>

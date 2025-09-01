@@ -5,7 +5,12 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { 
+  markdownComponents, 
+  remarkPlugins, 
+  getUserInitials, 
+  canDeletePost 
+} from '@/lib/utils/discussion-utils';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
@@ -37,11 +42,7 @@ export default function DiscussionPost({
   const [isDeleting, setIsDeleting] = useState(false);
   
   // Check if current user can delete this post
-  const canDelete = currentUser && (
-    currentUser.id === post.authorId || 
-    currentUser.role === 'ADMIN' ||
-    post.isOptimistic // Can always delete optimistic posts
-  );
+  const canDelete = canDeletePost(currentUser, post);
 
   // Handle post deletion
   const handleDelete = async () => {
@@ -61,85 +62,9 @@ export default function DiscussionPost({
     }
   };
 
-  // Get author initials for avatar fallback
-  const getAuthorInitials = (name) => {
-    if (!name) return '?';
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
-  // Custom markdown components for security and styling
-  const markdownComponents = {
-    // Prevent external links from opening in same tab
-    a: ({ href, children, ...props }) => {
-      const isExternal = href && (href.startsWith('http') || href.startsWith('https'));
-      return (
-        <a
-          href={href}
-          target={isExternal ? '_blank' : undefined}
-          rel={isExternal ? 'noopener noreferrer' : undefined}
-          className="text-primary hover:underline"
-          {...props}
-        >
-          {children}
-        </a>
-      );
-    },
-    // Style code blocks
-    code: ({ inline, children, ...props }) => {
-      if (inline) {
-        return (
-          <code className="bg-muted px-1 py-0.5 rounded text-sm font-mono" {...props}>
-            {children}
-          </code>
-        );
-      }
-      return (
-        <pre className="bg-muted p-3 rounded-md overflow-x-auto">
-          <code className="text-sm font-mono" {...props}>
-            {children}
-          </code>
-        </pre>
-      );
-    },
-    // Style blockquotes
-    blockquote: ({ children, ...props }) => (
-      <blockquote className="border-l-4 border-muted-foreground/20 pl-4 italic text-muted-foreground" {...props}>
-        {children}
-      </blockquote>
-    ),
-    // Style lists
-    ul: ({ children, ...props }) => (
-      <ul className="list-disc list-inside space-y-1" {...props}>
-        {children}
-      </ul>
-    ),
-    ol: ({ children, ...props }) => (
-      <ol className="list-decimal list-inside space-y-1" {...props}>
-        {children}
-      </ol>
-    ),
-    // Style headings
-    h1: ({ children, ...props }) => (
-      <h1 className="text-xl font-bold mt-4 mb-2" {...props}>
-        {children}
-      </h1>
-    ),
-    h2: ({ children, ...props }) => (
-      <h2 className="text-lg font-semibold mt-3 mb-2" {...props}>
-        {children}
-      </h2>
-    ),
-    h3: ({ children, ...props }) => (
-      <h3 className="text-base font-medium mt-2 mb-1" {...props}>
-        {children}
-      </h3>
-    ),
-  };
+
+
 
   return (
     <article 
@@ -160,7 +85,7 @@ export default function DiscussionPost({
             alt={post.author?.name || 'User avatar'}
           />
           <AvatarFallback className="text-xs">
-            {getAuthorInitials(post.author?.name)}
+            {getUserInitials(post.author?.name)}
           </AvatarFallback>
         </Avatar>
       </div>
@@ -192,7 +117,7 @@ export default function DiscussionPost({
         {/* Post Content */}
         <div className="prose prose-sm max-w-none text-sm leading-relaxed break-words">
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
+            remarkPlugins={remarkPlugins}
             components={markdownComponents}
           >
             {post.content}
