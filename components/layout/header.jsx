@@ -1,10 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { Search, Settings, Menu, X } from "lucide-react"
+import { Settings, Menu, X } from "lucide-react"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { SearchInput } from "@/components/SearchInput"
 import useAuthStore from "@/lib/stores/auth"
 import { useEffect, useState } from "react"
 import { checkAdminPermission } from "@/lib/admin-actions"
@@ -64,15 +64,10 @@ export function Header() {
           
           {/* Search Box - Hidden on mobile, visible on tablet+ */}
           <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder={t('search.placeholder', 'Search inventories...')}
-              className="pl-10 w-full"
-              aria-label={t('search.ariaLabel', 'Search inventories')}
-              />
-            </div>
+            <SearchInput
+              placeholder={t('search.placeholder', 'Search inventories...')}
+              className="w-full"
+            />
           </div>
           
           {/* Desktop Navigation Actions */}
@@ -152,15 +147,10 @@ export function Header() {
           <div className="md:hidden border-t bg-background/95 backdrop-blur">
             <div className="px-4 py-4 space-y-3">
               {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder={t('search.placeholder', 'Search inventories...')}
-                  className="pl-10 w-full"
-                  aria-label={t('search.ariaLabel', 'Search inventories')}
-                />
-              </div>
+              <SearchInput
+                placeholder={t('search.placeholder', 'Search inventories...')}
+                className="w-full"
+              />
               
               {/* Navigation Items */}
               <div className="space-y-2">
@@ -207,15 +197,10 @@ export function Header() {
         {/* Mobile Search Bar - Visible only on mobile when menu is closed and not authenticated */}
         {!isMobileMenuOpen && !user && (
           <div className="md:hidden pb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder={t('search.placeholder', 'Search inventories...')}
-                className="pl-10 w-full"
-                aria-label={t('search.ariaLabel', 'Search inventories')}
-              />
-            </div>
+            <SearchInput
+              placeholder={t('search.placeholder', 'Search inventories...')}
+              className="w-full"
+            />
           </div>
         )}
       </div>

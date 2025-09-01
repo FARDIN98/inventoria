@@ -123,6 +123,9 @@ model Inventory {
 
   // Custom ID format configuration
   customIdFormat String? @db.Text
+  
+  // Full-text search vector (computed column)
+  searchVector Unsupported("tsvector")?
 
   // Relations
   owner    User     @relation("InventoryOwner", fields: [ownerId], references: [id], onDelete: Cascade)
@@ -217,6 +220,9 @@ model Item {
   bool1 Boolean?
   bool2 Boolean?
   bool3 Boolean?
+  
+  // Full-text search vector (computed column)
+  searchVector Unsupported("tsvector")?
 
   // Relations
   inventory Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
