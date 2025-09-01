@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useAsyncOperation, useSelection, useDialog } from '@/lib/hooks/useAsyncOperation';
+import { useState, useEffect } from 'react';
+import { useAsyncOperation, useDialog } from '@/lib/hooks/useAsyncOperation';
+import { useItemSelection } from '@/lib/hooks/useItemSelection';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,7 +27,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, ExternalLink } from 'lucide-react';
 import ItemDialog from './ItemDialog';
+import LikeButton from './LikeButton';
+import LikeCount from './LikeCount';
 import { deleteItemAction } from '@/lib/item-actions';
+import useLikesStore from '@/lib/stores/likes';
 import { formatDistanceToNow } from 'date-fns';
 import { getFieldColumnName } from '@/lib/utils/custom-fields-utils';
 import { FIELD_TYPES } from '@/lib/utils/custom-fields-constants';
@@ -36,17 +40,39 @@ export default function ItemsTable({
   inventoryId, 
   inventory,
   fieldTemplates = [],
-  canEdit = false, 
+  canEdit = false,
+  currentUser = null,
   onItemsChange 
 }) {
   const { t } = useTranslation();
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItem, setDeletingItem] = useState(null);
   
+  // Use Zustand store for centralized like state management
+  const {
+    loadLikeStates,
+    refreshLikeStates,
+    getLikeState,
+    clearItemLikeStates
+  } = useLikesStore();
+  
   // Use reusable hooks for common patterns
   const { open: dialogOpen, openDialog, closeDialog } = useDialog();
   const { open: deleteDialogOpen, openDialog: openDeleteDialog, closeDialog: closeDeleteDialog } = useDialog();
-  const { selectedSet: selectedItems, selectAll, selectItem, clearSelection, isSelected, selectedCount } = useSelection();
+  
+  // Use the new item selection hook
+  const {
+    selectedItems,
+    selectedCount,
+    hasSelection,
+    isSelected,
+    toggleItemSelection,
+    handleSelectAll,
+    clearSelection,
+    isAllSelected,
+    isSomeSelected
+  } = useItemSelection(items);
+  
   const { loading, execute: executeDelete } = useAsyncOperation(
     async (itemId) => await deleteItemAction(itemId),
     {
@@ -58,7 +84,14 @@ export default function ItemsTable({
       }
     }
   );
-
+  
+  // Load like states for all items using Zustand store
+  useEffect(() => {
+    if (items.length > 0) {
+      const itemIds = items.map(item => item.id);
+      loadLikeStates(itemIds);
+    }
+  }, [items, loadLikeStates]);
   const handleAddItem = () => {
     setEditingItem(null);
     openDialog();
@@ -79,18 +112,6 @@ export default function ItemsTable({
     await executeDelete(deletingItem.id);
   };
 
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      selectAll(items);
-    } else {
-      clearSelection();
-    }
-  };
-
-  const handleSelectItem = (itemId, checked) => {
-    selectItem(itemId, checked);
-  };
-
   const handleEditSelected = () => {
     if (selectedCount === 1) {
       const itemId = selectedItems[0];
@@ -108,6 +129,20 @@ export default function ItemsTable({
       if (item) {
         handleDeleteClick(item);
       }
+    }
+  };
+
+  const handleLikeComplete = (result) => {
+    if (result.success) {
+      // Refresh like states after successful like operation using Zustand store
+      const itemIds = items.map(item => item.id);
+      refreshLikeStates(itemIds);
+      
+      // Clear selection after successful like operation
+      clearSelection();
+      
+      // Trigger items refresh if callback provided
+      onItemsChange?.();
     }
   };
 
@@ -165,7 +200,7 @@ export default function ItemsTable({
           href={value} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
+          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
         >
           <span className="truncate max-w-[200px]">{value}</span>
           <ExternalLink className="h-3 w-3" />
@@ -228,7 +263,7 @@ export default function ItemsTable({
       </div>
 
       {/* Items Toolbar */}
-      {canEdit && items.length > 0 && (
+      {items.length > 0 && (
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">
@@ -236,24 +271,36 @@ export default function ItemsTable({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleEditSelected}
-              disabled={selectedCount !== 1}
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              {t('actions.edit')}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDeleteSelected}
-              disabled={selectedCount !== 1}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {t('actions.delete')}
-            </Button>
+            {/* Like Button - Active when items are selected */}
+            <LikeButton
+              selectedItemIds={selectedItems}
+              currentUser={currentUser}
+              onLikeComplete={handleLikeComplete}
+              disabled={!hasSelection}
+            />
+            
+            {canEdit && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEditSelected}
+                  disabled={selectedCount !== 1}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  {t('actions.edit')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeleteSelected}
+                  disabled={selectedCount !== 1}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {t('actions.delete')}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -262,15 +309,16 @@ export default function ItemsTable({
         <Table>
           <TableHeader>
             <TableRow>
-              {canEdit && (
-                <TableHead className="w-[50px]">
-                  <Checkbox
-                    checked={selectedCount === items.length && items.length > 0}
-                    onCheckedChange={handleSelectAll}
-                    aria-label="Select all items"
-                  />
-                </TableHead>
-              )}
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={isAllSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = isSomeSelected;
+                  }}
+                  onCheckedChange={handleSelectAll}
+                  aria-label="Select all items"
+                />
+              </TableHead>
               <TableHead className="w-[120px]">{t('items.customId')}</TableHead>
               {visibleFieldTemplates.map((template) => (
                 <TableHead key={template.id}>
@@ -291,48 +339,58 @@ export default function ItemsTable({
                   <TableHead>{t('items.bool3')}</TableHead>
                 </>
               )}
+              <TableHead className="w-[80px]">{t('items.likes')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((item) => (
-              <TableRow key={item.id}>
-                {canEdit && (
+            {items.map((item) => {
+              const likeState = getLikeState(item.id);
+              
+              return (
+                <TableRow key={item.id}>
                   <TableCell>
                     <Checkbox
                       checked={isSelected(item.id)}
-                      onCheckedChange={(checked) => handleSelectItem(item.id, checked)}
+                      onCheckedChange={(checked) => toggleItemSelection(item.id)}
                       aria-label={`Select item ${item.customId}`}
                     />
                   </TableCell>
-                )}
-                <TableCell className="font-medium">
-                  {item.customId}
-                </TableCell>
-                {visibleFieldTemplates.map((template) => {
-                  const value = getFieldValue(item, template);
-                  const displayType = getFieldDisplayType(template.fieldType);
-                  return (
-                    <TableCell key={template.id}>
-                      {formatValue(value, displayType)}
-                    </TableCell>
-                  );
-                })}
-                {/* Fallback to legacy columns if no field templates */}
-                {visibleFieldTemplates.length === 0 && (
-                  <>
-                    <TableCell>{formatValue(item.text1)}</TableCell>
-                    <TableCell>{formatValue(item.text2)}</TableCell>
-                    <TableCell>{formatValue(item.text3)}</TableCell>
-                    <TableCell>{formatValue(item.num1, 'number')}</TableCell>
-                    <TableCell>{formatValue(item.num2, 'number')}</TableCell>
-                    <TableCell>{formatValue(item.num3, 'number')}</TableCell>
-                    <TableCell>{formatValue(item.bool1, 'boolean')}</TableCell>
-                    <TableCell>{formatValue(item.bool2, 'boolean')}</TableCell>
-                    <TableCell>{formatValue(item.bool3, 'boolean')}</TableCell>
-                  </>
-                )}
-              </TableRow>
-            ))}
+                  <TableCell className="font-medium">
+                    {item.customId}
+                  </TableCell>
+                  {visibleFieldTemplates.map((template) => {
+                    const value = getFieldValue(item, template);
+                    const displayType = getFieldDisplayType(template.fieldType);
+                    return (
+                      <TableCell key={template.id}>
+                        {formatValue(value, displayType)}
+                      </TableCell>
+                    );
+                  })}
+                  {/* Fallback to legacy columns if no field templates */}
+                  {visibleFieldTemplates.length === 0 && (
+                    <>
+                      <TableCell>{formatValue(item.text1, 'text')}</TableCell>
+                      <TableCell>{formatValue(item.text2, 'text')}</TableCell>
+                      <TableCell>{formatValue(item.text3, 'text')}</TableCell>
+                      <TableCell>{formatValue(item.num1, 'number')}</TableCell>
+                      <TableCell>{formatValue(item.num2, 'number')}</TableCell>
+                      <TableCell>{formatValue(item.num3, 'number')}</TableCell>
+                      <TableCell>{formatValue(item.bool1, 'boolean')}</TableCell>
+                      <TableCell>{formatValue(item.bool2, 'boolean')}</TableCell>
+                      <TableCell>{formatValue(item.bool3, 'boolean')}</TableCell>
+                    </>
+                  )}
+                  <TableCell>
+                    <LikeCount 
+                      likeCount={likeState.likeCount} 
+                      showZero={false}
+                      size="sm"
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

@@ -9,7 +9,8 @@ export default function ItemsTableWrapper({
   inventoryId, 
   inventory,
   fieldTemplates = [],
-  canEdit = false 
+  canEdit = false,
+  currentUser = null
 }) {
   const [items, setItems] = useState(initialItems);
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,7 @@ export default function ItemsTableWrapper({
       inventory={inventory}
       fieldTemplates={fieldTemplates}
       canEdit={canEdit}
+      currentUser={currentUser}
       onItemsChange={refreshItems}
     />
   );
