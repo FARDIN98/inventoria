@@ -1,54 +1,16 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
-import dynamic from 'next/dynamic';
+import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Send, AlertCircle } from 'lucide-react';
+
+import { Textarea } from '@/components/ui/textarea';
+import { Send, AlertCircle, Eye, Edit, Bold, Italic, List, Quote, Code, Link, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// Dynamic import of MDXEditor with SSR disabled for Next.js compatibility
-const MDXEditor = dynamic(
-  () => import('@mdxeditor/editor').then((mod) => ({ default: mod.MDXEditor })),
-  { 
-    ssr: false,
-    loading: () => (
-      <div className="min-h-[120px] border rounded-md flex items-center justify-center bg-muted/30">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">Loading editor...</span>
-        </div>
-      </div>
-    )
-  }
-);
-
-// Dynamic import of MDXEditor plugins - import them as individual functions
-let mdxEditorPlugins = null;
-let mdxEditorComponents = null;
-
-// Load plugins dynamically
-if (typeof window !== 'undefined') {
-  import('@mdxeditor/editor').then((mod) => {
-    mdxEditorPlugins = {
-      headingsPlugin: mod.headingsPlugin,
-      listsPlugin: mod.listsPlugin,
-      quotePlugin: mod.quotePlugin,
-      markdownShortcutPlugin: mod.markdownShortcutPlugin,
-      toolbarPlugin: mod.toolbarPlugin
-    };
-    mdxEditorComponents = {
-      UndoRedo: mod.UndoRedo,
-      BoldItalicUnderlineToggles: mod.BoldItalicUnderlineToggles,
-      BlockTypeSelect: mod.BlockTypeSelect,
-      ListsToggle: mod.ListsToggle,
-      Separator: mod.Separator,
-      InsertThematicBreak: mod.InsertThematicBreak
-    };
-  });
-}
 
 /**
  * Post composer component with MDXEditor integration
@@ -64,20 +26,8 @@ export default function PostComposer({
   const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
-  const [isEditorReady, setIsEditorReady] = useState(true);
-  const [pluginsLoaded, setPluginsLoaded] = useState(false);
-  
-  // Check if plugins are loaded
-  React.useEffect(() => {
-    const checkPlugins = () => {
-      if (mdxEditorPlugins && mdxEditorComponents) {
-        setPluginsLoaded(true);
-      } else {
-        setTimeout(checkPlugins, 100);
-      }
-    };
-    checkPlugins();
-  }, []);
+  const [showPreview, setShowPreview] = useState(true);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
   
   const MAX_CHARACTERS = 10000;
   const characterCount = content.length;
@@ -146,43 +96,115 @@ export default function PostComposer({
     }
   }, [content, isSubmitting, onSubmit, validateContent, t]);
 
+  // Markdown formatting functions
+  const insertMarkdown = useCallback((before, after = '', placeholder = '') => {
+    const textarea = document.querySelector('textarea');
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = content.substring(start, end);
+    const textToInsert = selectedText || placeholder;
+    
+    const newContent = 
+      content.substring(0, start) + 
+      before + textToInsert + after + 
+      content.substring(end);
+    
+    setContent(newContent);
+    
+    // Set cursor position after insertion
+    setTimeout(() => {
+      const newCursorPos = start + before.length + textToInsert.length;
+      textarea.focus();
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  }, [content]);
+
+  const formatBold = useCallback(() => insertMarkdown('**', '**', ''), [insertMarkdown]);
+  const formatItalic = useCallback(() => insertMarkdown('*', '*', ''), [insertMarkdown]);
+  const formatCode = useCallback(() => insertMarkdown('`', '`', ''), [insertMarkdown]);
+  const formatQuote = useCallback(() => insertMarkdown('> ', '', ''), [insertMarkdown]);
+  const formatList = useCallback(() => insertMarkdown('- ', '', ''), [insertMarkdown]);
+  const formatLink = useCallback(() => insertMarkdown('[', '](url)', 'link text'), [insertMarkdown]);
+
   // Handle keyboard shortcuts
   const handleKeyDown = useCallback((e) => {
     // Ctrl/Cmd + Enter to submit
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       handleSubmit(e);
+      return;
     }
-  }, [handleSubmit]);
+    
+    // Ctrl/Cmd + B for bold
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+      e.preventDefault();
+      formatBold();
+      return;
+    }
+    
+    // Ctrl/Cmd + I for italic
+    if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+      e.preventDefault();
+      formatItalic();
+      return;
+    }
+  }, [handleSubmit, formatBold, formatItalic]);
 
-  // MDXEditor plugins configuration
-  const editorPlugins = useMemo(() => {
-    if (!pluginsLoaded || !mdxEditorPlugins || !mdxEditorComponents) return [];
-    
-    const { UndoRedo, BoldItalicUnderlineToggles, BlockTypeSelect, ListsToggle, Separator, InsertThematicBreak } = mdxEditorComponents;
-    
-    return [
-      mdxEditorPlugins.headingsPlugin(),
-      mdxEditorPlugins.listsPlugin(),
-      mdxEditorPlugins.quotePlugin(),
-      mdxEditorPlugins.markdownShortcutPlugin(),
-      mdxEditorPlugins.toolbarPlugin({
-        toolbarContents: () => (
-          <div className="flex items-center gap-1">
-            <UndoRedo />
-            <Separator />
-            <BoldItalicUnderlineToggles />
-            <Separator />
-            <BlockTypeSelect />
-            <Separator />
-            <ListsToggle />
-            <Separator />
-            <InsertThematicBreak />
-          </div>
-        )
-      })
-    ];
-  }, [pluginsLoaded]);
+  // Markdown components for rendering
+  const markdownComponents = {
+    // Style paragraphs
+    p: ({ children, ...props }) => (
+      <p className="mb-2 last:mb-0" {...props}>
+        {children}
+      </p>
+    ),
+    // Style headings
+    h1: ({ children, ...props }) => (
+      <h1 className="text-xl font-bold mt-4 mb-2 first:mt-0" {...props}>
+        {children}
+      </h1>
+    ),
+    h2: ({ children, ...props }) => (
+      <h2 className="text-lg font-semibold mt-3 mb-2 first:mt-0" {...props}>
+        {children}
+      </h2>
+    ),
+    h3: ({ children, ...props }) => (
+      <h3 className="text-base font-medium mt-2 mb-1 first:mt-0" {...props}>
+        {children}
+      </h3>
+    ),
+    // Style lists
+    ul: ({ children, ...props }) => (
+      <ul className="list-disc list-inside space-y-1 mb-2" {...props}>
+        {children}
+      </ul>
+    ),
+    ol: ({ children, ...props }) => (
+      <ol className="list-decimal list-inside space-y-1 mb-2" {...props}>
+        {children}
+      </ol>
+    ),
+    // Style blockquotes
+    blockquote: ({ children, ...props }) => (
+      <blockquote className="border-l-4 border-muted pl-4 italic text-muted-foreground mb-2" {...props}>
+        {children}
+      </blockquote>
+    ),
+    // Style code
+    code: ({ children, ...props }) => (
+      <code className="bg-muted px-1 py-0.5 rounded text-sm font-mono" {...props}>
+        {children}
+      </code>
+    ),
+    pre: ({ children, ...props }) => (
+      <pre className="bg-muted p-3 rounded-md overflow-x-auto mb-2" {...props}>
+        {children}
+      </pre>
+    )
+  };
 
   // Don't render if user is not authenticated
   if (!currentUser) {
@@ -200,10 +222,9 @@ export default function PostComposer({
   return (
     <Card className={className}>
       <CardContent className="p-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* User Avatar and Editor Container */}
+        {!isEditorOpen ? (
+          // Collapsed state - Show "Write Comment" button
           <div className="flex gap-3">
-            {/* Current User Avatar */}
             <div className="flex-shrink-0 pt-1">
               <Avatar className="h-8 w-8">
                 <AvatarImage 
@@ -215,43 +236,155 @@ export default function PostComposer({
                 </AvatarFallback>
               </Avatar>
             </div>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsEditorOpen(true)}
+              className="flex-1 justify-start text-muted-foreground"
+            >
+              {t('discussion.writeComment', 'Write Comment')}
+            </Button>
+          </div>
+        ) : (
+          // Expanded state - Show full editor
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* User Avatar and Editor Container */}
+            <div className="flex gap-3">
+              {/* Current User Avatar */}
+              <div className="flex-shrink-0 pt-1">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage 
+                    src={currentUser.image} 
+                    alt={currentUser.name || 'Your avatar'}
+                  />
+                  <AvatarFallback className="text-xs">
+                    {getUserInitials(currentUser.name)}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
 
-            {/* Editor Container */}
-            <div className="flex-1 min-w-0">
+              {/* Editor Container */}
+              <div className="flex-1 min-w-0 space-y-3">
+              {/* Markdown Toolbar */}
+              <div className="flex items-center gap-1 p-2 border rounded-md bg-muted/30">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={formatBold}
+                  className="h-8 w-8 p-0"
+                  title="Bold (Ctrl+B)"
+                >
+                  <Bold className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={formatItalic}
+                  className="h-8 w-8 p-0"
+                  title="Italic (Ctrl+I)"
+                >
+                  <Italic className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={formatCode}
+                  className="h-8 w-8 p-0"
+                  title="Code"
+                >
+                  <Code className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={formatQuote}
+                  className="h-8 w-8 p-0"
+                  title="Quote"
+                >
+                  <Quote className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={formatList}
+                  className="h-8 w-8 p-0"
+                  title="List"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={formatLink}
+                  className="h-8 w-8 p-0"
+                  title="Link"
+                >
+                  <Link className="h-4 w-4" />
+                </Button>
+                
+                <div className="flex-1" />
+                
+                {/* Close Button */}
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setIsEditorOpen(false);
+                    setContent('');
+                    setError('');
+                  }}
+                  className="h-8 w-8 p-0 bg-red-500 hover:bg-red-600 text-white font-bold"
+                  title="Close Editor"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+
+              </div>
+
+              {/* Text Area with Integrated Preview */}
               <div 
                 className={cn(
-                  "border rounded-md transition-colors",
+                  "border rounded-md transition-colors overflow-hidden",
                   error && "border-destructive",
                   "focus-within:border-ring focus-within:ring-1 focus-within:ring-ring"
                 )}
-                onKeyDown={handleKeyDown}
               >
-                {isEditorReady && pluginsLoaded ? (
-                  <MDXEditor
-                    markdown={content}
-                    onChange={handleContentChange}
-                    plugins={editorPlugins}
+                <div className="flex flex-col">
+                  {/* Text Area */}
+                  <Textarea
+                    value={content}
+                    onChange={(e) => handleContentChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder={placeholder || t('discussion.placeholder', 'Share your thoughts...')}
-                    className="min-h-[120px] [&_.mdxeditor-toolbar]:flex [&_.mdxeditor-toolbar]:flex-row [&_.mdxeditor-toolbar]:items-center [&_.mdxeditor-toolbar]:gap-1 [&_.mdxeditor-toolbar]:p-2 [&_.mdxeditor-toolbar]:border-b [&_.mdxeditor-toolbar]:flex-nowrap [&_.mdxeditor-toolbar]:overflow-x-auto"
-                    contentEditableClassName="prose prose-sm max-w-none p-3 focus:outline-none"
-                    onBlur={() => setIsEditorReady(true)}
+                    className="min-h-[120px] resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 border-b"
                   />
-                ) : (
-                  <div 
-                    className="min-h-[120px] p-3 text-sm text-muted-foreground cursor-text flex items-center justify-center"
-                    onClick={() => setIsEditorReady(true)}
-                  >
-                    {!pluginsLoaded ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Loading editor...</span>
+                  
+                  {/* Integrated Preview */}
+                  {content.trim() && (
+                    <div className="bg-muted/30 border-t">
+                      <div className="px-3 py-2 text-xs text-muted-foreground border-b bg-muted/50">
+                        {t('discussion.preview', 'Preview')}
                       </div>
-                    ) : (
-                      placeholder || t('discussion.placeholder', 'Share your thoughts...')
-                    )}
-                  </div>
-                )}
+                      <div className="p-3 min-h-[60px] max-h-[200px] overflow-y-auto">
+                        <div className="prose prose-sm max-w-none dark:prose-invert">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={markdownComponents}
+                          >
+                            {content}
+                          </ReactMarkdown>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
+
+
             </div>
           </div>
 
@@ -301,11 +434,12 @@ export default function PostComposer({
             </div>
           )}
 
-          {/* Keyboard Shortcut Hint */}
-          <div className="text-xs text-muted-foreground">
-            {t('discussion.shortcutHint', 'Press Ctrl+Enter to post')}
-          </div>
-        </form>
+            {/* Keyboard Shortcut Hint */}
+            <div className="text-xs text-muted-foreground">
+              {t('discussion.shortcutHint', 'Press Ctrl+Enter to post')}
+            </div>
+          </form>
+        )}
       </CardContent>
     </Card>
   );

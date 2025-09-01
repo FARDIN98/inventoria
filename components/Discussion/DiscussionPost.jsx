@@ -61,17 +61,6 @@ export default function DiscussionPost({
     }
   };
 
-  // Format timestamp
-  const formatTimestamp = (timestamp) => {
-    try {
-      const date = new Date(timestamp);
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch (error) {
-      console.error('Error formatting timestamp:', error);
-      return t('discussion.timeUnknown', 'Unknown time');
-    }
-  };
-
   // Get author initials for avatar fallback
   const getAuthorInitials = (name) => {
     if (!name) return '?';
@@ -189,13 +178,7 @@ export default function DiscussionPost({
             {post.author?.name || t('discussion.unknownUser', 'Unknown User')}
           </Link>
           
-          {/* Timestamp */}
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            <time dateTime={post.createdAt}>
-              {formatTimestamp(post.createdAt)}
-            </time>
-          </div>
+          
           
           {/* Optimistic indicator */}
           {isOptimistic && (
