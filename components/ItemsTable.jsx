@@ -30,7 +30,7 @@ import ItemDialog from './ItemDialog';
 import LikeButton from './LikeButton';
 import LikeCount from './LikeCount';
 import { deleteItemAction } from '@/lib/item-actions';
-import { getMultipleItemsLikeStatusAction } from '@/lib/like-actions';
+import useLikesStore from '@/lib/stores/likes';
 import { formatDistanceToNow } from 'date-fns';
 import { getFieldColumnName } from '@/lib/utils/custom-fields-utils';
 import { FIELD_TYPES } from '@/lib/utils/custom-fields-constants';
@@ -47,7 +47,14 @@ export default function ItemsTable({
   const { t } = useTranslation();
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItem, setDeletingItem] = useState(null);
-  const [itemLikeStates, setItemLikeStates] = useState({});
+  
+  // Use Zustand store for centralized like state management
+  const {
+    loadLikeStates,
+    refreshLikeStates,
+    getLikeState,
+    clearItemLikeStates
+  } = useLikesStore();
   
   // Use reusable hooks for common patterns
   const { open: dialogOpen, openDialog, closeDialog } = useDialog();
@@ -78,21 +85,13 @@ export default function ItemsTable({
     }
   );
   
-  // Load like states for all items
+  // Load like states for all items using Zustand store
   useEffect(() => {
     if (items.length > 0) {
       const itemIds = items.map(item => item.id);
-      getMultipleItemsLikeStatusAction(itemIds)
-        .then(result => {
-          if (result.success) {
-            setItemLikeStates(result.items);
-          }
-        })
-        .catch(error => {
-          console.error('Failed to load like states:', error);
-        });
+      loadLikeStates(itemIds);
     }
-  }, [items]);
+  }, [items, loadLikeStates]);
   const handleAddItem = () => {
     setEditingItem(null);
     openDialog();
@@ -135,17 +134,9 @@ export default function ItemsTable({
 
   const handleLikeComplete = (result) => {
     if (result.success) {
-      // Refresh like states after successful like operation
+      // Refresh like states after successful like operation using Zustand store
       const itemIds = items.map(item => item.id);
-      getMultipleItemsLikeStatusAction(itemIds)
-        .then(likeResult => {
-          if (likeResult.success) {
-            setItemLikeStates(likeResult.items);
-          }
-        })
-        .catch(error => {
-          console.error('Failed to refresh like states:', error);
-        });
+      refreshLikeStates(itemIds);
       
       // Clear selection after successful like operation
       clearSelection();
@@ -353,7 +344,7 @@ export default function ItemsTable({
           </TableHeader>
           <TableBody>
             {items.map((item) => {
-              const likeState = itemLikeStates[item.id] || { likeCount: 0, isLiked: false };
+              const likeState = getLikeState(item.id);
               
               return (
                 <TableRow key={item.id}>
