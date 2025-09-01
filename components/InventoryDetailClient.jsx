@@ -260,6 +260,7 @@ export default function InventoryDetailClient({
                 inventory={inventory}
                 fieldTemplates={currentFieldTemplates}
                 canEdit={canEdit}
+                currentUser={currentUser}
               />
             </CardContent>
           </Card>
