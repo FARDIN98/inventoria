@@ -132,29 +132,30 @@ export default function CreateInventoryPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="mb-6">
-        <Link 
-          href="/dashboard" 
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          {t('pages.createInventory.backToDashboard')}
-        </Link>
-        <h1 className="text-3xl font-bold">{t('pages.createInventory.title')}</h1>
-        <p className="text-muted-foreground mt-2">
-          {t('pages.createInventory.subtitle')}
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/50 dark:from-slate-950 dark:via-emerald-950/30 dark:to-teal-950/50">
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="mb-6 p-6 bg-gradient-to-r from-white/80 to-emerald-50/80 dark:from-slate-900/80 dark:to-emerald-950/80 rounded-xl backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 shadow-lg">
+          <Link 
+            href="/dashboard" 
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-500 hover:text-white px-3 py-1 rounded-lg transition-all duration-200"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {t('pages.createInventory.backToDashboard')}
+          </Link>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-400 dark:via-teal-400 dark:to-cyan-400 bg-clip-text text-transparent">{t('pages.createInventory.title')}</h1>
+          <p className="text-muted-foreground mt-2">
+            {t('pages.createInventory.subtitle')}
+          </p>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('pages.createInventory.cardTitle')}</CardTitle>
-          <CardDescription>
-            {t('pages.createInventory.cardDescription')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        <Card className="bg-gradient-to-br from-white/90 to-emerald-50/80 dark:from-slate-900/90 dark:to-emerald-950/80 border-emerald-200/50 dark:border-emerald-800/30 shadow-xl backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/30 dark:to-teal-950/30">
+            <CardTitle className="bg-gradient-to-r from-emerald-700 to-teal-700 dark:from-emerald-300 dark:to-teal-300 bg-clip-text text-transparent">{t('pages.createInventory.cardTitle')}</CardTitle>
+            <CardDescription>
+              {t('pages.createInventory.cardDescription')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Title Field */}
             <div className="space-y-2">
@@ -173,7 +174,7 @@ export default function CreateInventoryPage() {
                   }
                 })}
                 placeholder={t('forms.placeholder.title')}
-                className={errors.title ? 'border-red-500' : ''}
+                className={`bg-gradient-to-r from-white to-emerald-50/50 dark:from-slate-800 dark:to-emerald-950/50 border-2 ${errors.title ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} focus:border-emerald-500 dark:focus:border-emerald-400 shadow-md hover:shadow-lg transition-all duration-200`}
               />
               {errors.title && (
                 <p className="text-sm text-red-500">{errors.title.message}</p>
@@ -193,7 +194,7 @@ export default function CreateInventoryPage() {
                 })}
                 placeholder={t('forms.placeholder.description')}
                 rows={4}
-                className={errors.description ? 'border-red-500' : ''}
+                className={`bg-gradient-to-r from-white to-emerald-50/50 dark:from-slate-800 dark:to-emerald-950/50 border-2 ${errors.description ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} focus:border-emerald-500 dark:focus:border-emerald-400 shadow-md hover:shadow-lg transition-all duration-200`}
               />
               {errors.description && (
                 <p className="text-sm text-red-500">{errors.description.message}</p>
@@ -213,7 +214,7 @@ export default function CreateInventoryPage() {
                   value={watchedCategoryId}
                   onValueChange={(value) => setValue('categoryId', value)}
                 >
-                  <SelectTrigger className={errors.categoryId ? 'border-red-500' : ''}>
+                  <SelectTrigger className={`bg-gradient-to-r from-white to-emerald-50/50 dark:from-slate-800 dark:to-emerald-950/50 border-2 ${errors.categoryId ? 'border-red-500' : 'border-slate-200 dark:border-slate-600'} focus:border-emerald-500 dark:focus:border-emerald-400 shadow-md hover:shadow-lg transition-all duration-200`}>
                     <SelectValue placeholder={t('forms.placeholder.category')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -241,12 +242,14 @@ export default function CreateInventoryPage() {
                     onKeyPress={handleTagKeyPress}
                     placeholder={t('forms.placeholder.tags')}
                     disabled={tags.length >= 10}
+                    className="bg-gradient-to-r from-white to-emerald-50/50 dark:from-slate-800 dark:to-emerald-950/50 border-2 border-slate-200 dark:border-slate-600 focus:border-emerald-500 dark:focus:border-emerald-400 shadow-md hover:shadow-lg transition-all duration-200"
                   />
                   <Button
                     type="button"
                     variant="outline"
                     onClick={addTag}
                     disabled={!tagInput.trim() || tags.length >= 10}
+                    className="bg-white/80 dark:bg-slate-700/80 border-slate-200 dark:border-slate-600 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-500 hover:text-white hover:border-transparent transition-all duration-200"
                   >
                     {t('actions.add')}
                   </Button>
@@ -256,13 +259,13 @@ export default function CreateInventoryPage() {
                     {tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-secondary text-secondary-foreground"
+                        className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
                       >
                         {tag}
                         <button
                           type="button"
                           onClick={() => removeTag(tag)}
-                          className="ml-1 text-secondary-foreground/70 hover:text-secondary-foreground"
+                          className="ml-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full w-4 h-4 flex items-center justify-center transition-all duration-200"
                         >
                           ×
                         </button>
@@ -278,8 +281,8 @@ export default function CreateInventoryPage() {
 
             {/* Server Error */}
             {serverError && (
-              <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                <p className="text-sm text-red-600">{serverError}</p>
+              <div className="p-4 rounded-xl bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/50 dark:to-pink-950/50 border border-red-200 dark:border-red-800 shadow-lg">
+                <p className="text-sm text-red-600 dark:text-red-400 font-medium">{serverError}</p>
               </div>
             )}
 
@@ -290,12 +293,14 @@ export default function CreateInventoryPage() {
                 variant="outline"
                 onClick={() => router.push('/dashboard')}
                 disabled={isSubmitting}
+                className="bg-white/80 dark:bg-slate-700/80 border-slate-200 dark:border-slate-600 hover:bg-gradient-to-r hover:from-gray-500 hover:to-slate-500 hover:text-white hover:border-transparent transition-all duration-200"
               >
                 {t('actions.cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting || !watchedCategoryId || loadingCategories}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0"
               >
                 {isSubmitting ? (
                   <>
@@ -307,9 +312,10 @@ export default function CreateInventoryPage() {
                 )}
               </Button>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

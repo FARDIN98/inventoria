@@ -152,40 +152,46 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="container mx-auto py-8 space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold tracking-tight">
-              {isAdmin ? t('dashboard.adminTitle') : t('dashboard.title')}
-            </h1>
-            {isAdmin && (
-              <Shield className="h-6 w-6 text-amber-500" title="Admin View" />
-            )}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-2xl -z-10"></div>
+        <div className="flex items-center justify-between p-8 rounded-2xl backdrop-blur-sm border border-white/20 shadow-lg">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {isAdmin ? t('dashboard.adminTitle') : t('dashboard.title')}
+              </h1>
+              {isAdmin && (
+                <div className="relative">
+                  <Shield className="h-7 w-7 text-amber-500 drop-shadow-lg" title="Admin View" />
+                  <div className="absolute -inset-1 bg-amber-400/20 rounded-full blur animate-pulse"></div>
+                </div>
+              )}
+            </div>
+            <p className="text-muted-foreground text-lg">
+              {isAdmin 
+                ? t('dashboard.adminDescription')
+          : t('dashboard.description')
+              }
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            {isAdmin 
-              ? t('dashboard.adminDescription')
-        : t('dashboard.description')
-            }
-          </p>
+          <Link href="/inventory/create">
+            <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <Plus className="h-4 w-4" />
+              {t('actions.createNew')}
+            </Button>
+          </Link>
         </div>
-        <Link href="/inventory/create">
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            {t('actions.createNew')}
-          </Button>
-        </Link>
       </div>
 
       {/* Toolbar */}
       {inventories && inventories.length > 0 && (
-        <Card>
+        <Card className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/50 dark:to-gray-900/50 border-2 border-slate-200/50 dark:border-slate-700/50 shadow-xl">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   {selectedInventories.size} of {inventories.length} selected
                 </span>
               </div>
@@ -273,10 +279,10 @@ export default function DashboardPage() {
       )}
 
       {/* Inventories Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('dashboard.title')}</CardTitle>
-          <CardDescription>
+      <Card className="bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 dark:from-slate-900 dark:via-slate-800/50 dark:to-blue-950/30 border-2 border-slate-200/60 dark:border-slate-700/60 shadow-2xl backdrop-blur-sm">
+        <CardHeader className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-t-lg border-b border-slate-200/50 dark:border-slate-700/50">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-100 bg-clip-text text-transparent">{t('dashboard.title')}</CardTitle>
+          <CardDescription className="text-base font-medium text-slate-600 dark:text-slate-400">
             {inventories && inventories.length > 0 
               ? t('dashboard.inventoryCount', { count: inventories.length })
             : t('dashboard.noInventoryItems')
@@ -327,7 +333,7 @@ export default function DashboardPage() {
                 {inventories && inventories.map((inventory) => (
                   <TableRow 
                     key={inventory.id}
-                    className={selectedInventories.has(inventory.id) ? 'bg-muted/50' : ''}
+                    className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-purple-50/50 dark:hover:from-blue-950/30 dark:hover:to-purple-950/30 ${selectedInventories.has(inventory.id) ? 'bg-gradient-to-r from-blue-100/60 to-purple-100/60 dark:from-blue-900/40 dark:to-purple-900/40 shadow-sm' : ''}`}
                   >
                     <TableCell>
                       <Checkbox
@@ -348,7 +354,7 @@ export default function DashboardPage() {
                       {inventory.description || t('common.noDescription')}
                     </TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900/60 dark:to-blue-800/60 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:text-blue-200 shadow-sm border border-blue-200/50 dark:border-blue-700/50">
                         {inventory.categories?.name || t('common.uncategorized')}
                       </span>
                     </TableCell>
@@ -358,7 +364,7 @@ export default function DashboardPage() {
                           inventory.inventory_tags.map((tagRelation, index) => (
                             <span
                               key={index}
-                              className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+                              className="inline-flex items-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/60 dark:to-pink-900/60 px-2.5 py-1 text-xs font-medium text-purple-800 dark:text-purple-200 shadow-sm border border-purple-200/50 dark:border-purple-700/50 hover:scale-105 transition-transform duration-200"
                             >
                               {tagRelation.tags?.name}
                             </span>
@@ -377,13 +383,13 @@ export default function DashboardPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         {inventory.isPublic ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
-                            <Eye className="h-3 w-3" />
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/60 dark:to-emerald-900/60 px-3 py-1.5 text-xs font-semibold text-green-800 dark:text-green-200 shadow-md border border-green-200/50 dark:border-green-700/50">
+                            <Eye className="h-3.5 w-3.5" />
                             {t('common.public')}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-700/10">
-                            <EyeOff className="h-3 w-3" />
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-gray-100 to-slate-100 dark:from-gray-900/60 dark:to-slate-900/60 px-3 py-1.5 text-xs font-semibold text-gray-800 dark:text-gray-200 shadow-md border border-gray-200/50 dark:border-gray-700/50">
+                            <EyeOff className="h-3.5 w-3.5" />
                             {t('common.private')}
                           </span>
                         )}
@@ -402,11 +408,11 @@ export default function DashboardPage() {
 
       {/* Public Inventories Toolbar */}
       {!isAdmin && publicInventories && publicInventories.length > 0 && (
-        <Card>
+        <Card className="bg-gradient-to-br from-blue-50/80 via-indigo-50/60 to-purple-50/80 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-purple-950/30 border-blue-200/50 dark:border-blue-800/30 backdrop-blur-sm">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground font-medium">
                   {t('common.selectedCount', { selected: selectedPublicInventories.size, total: publicInventories.length })}
                 </span>
               </div>
@@ -467,9 +473,9 @@ export default function DashboardPage() {
 
       {/* Public Inventories with Write Access Table (for non-admin users) */}
       {!isAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('dashboard.publicInventoriesWithAccess')}</CardTitle>
+        <Card className="bg-gradient-to-br from-emerald-50/80 via-teal-50/60 to-cyan-50/80 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-cyan-950/30 border-emerald-200/50 dark:border-emerald-800/30 backdrop-blur-sm shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-emerald-100/50 to-teal-100/50 dark:from-emerald-900/20 dark:to-teal-900/20 border-b border-emerald-200/30 dark:border-emerald-700/30">
+            <CardTitle className="bg-gradient-to-r from-emerald-700 to-teal-600 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent font-bold">{t('dashboard.publicInventoriesWithAccess')}</CardTitle>
             {/* <CardDescription>
               {publicInventories && publicInventories.length > 0 
                 ? t('dashboard.writeAccessCount', 'Public inventories with write access', { count: publicInventories.length })
@@ -479,11 +485,11 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {!publicInventories || publicInventories.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="text-muted-foreground mb-4">
-                  <div className="text-4xl mb-4">🌐</div>
-                  <h3 className="text-lg font-semibold mb-2">{t('dashboard.noPublicInventories')}</h3>
-                  <p className="text-sm">
+              <div className="text-center py-12">
+                <div className="text-muted-foreground mb-6">
+                  <div className="text-6xl mb-6 animate-pulse">🌐</div>
+                  <h3 className="text-xl font-bold mb-3 bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">{t('dashboard.noPublicInventories')}</h3>
+                  <p className="text-sm max-w-md mx-auto leading-relaxed">
                     {t('dashboard.noPublicInventoriesDescription')}
                   </p>
                 </div>
@@ -512,7 +518,11 @@ export default function DashboardPage() {
                   {publicInventories.map((inventory) => (
                     <TableRow 
                       key={inventory.id}
-                      className={selectedPublicInventories.has(inventory.id) ? 'bg-muted/50' : ''}
+                      className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-emerald-50/50 hover:to-teal-50/50 dark:hover:from-emerald-950/30 dark:hover:to-teal-950/30 ${
+                        selectedPublicInventories.has(inventory.id) 
+                          ? 'bg-gradient-to-r from-emerald-100/70 to-teal-100/70 dark:from-emerald-900/40 dark:to-teal-900/40 shadow-sm' 
+                          : ''
+                      }`}
                     >
                       <TableCell>
                         <Checkbox
@@ -533,7 +543,7 @@ export default function DashboardPage() {
                         {inventory.description || t('common.noDescription')}
                       </TableCell>
                       <TableCell>
-                        <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                        <span className="inline-flex items-center rounded-full bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/60 dark:to-indigo-900/60 px-3 py-1.5 text-xs font-semibold text-blue-800 dark:text-blue-200 shadow-md border border-blue-200/50 dark:border-blue-700/50 hover:scale-105 transition-transform duration-200">
                           {inventory.categories?.name || t('common.uncategorized')}
                         </span>
                       </TableCell>
@@ -543,7 +553,7 @@ export default function DashboardPage() {
                             inventory.inventory_tags.map((tagRelation, index) => (
                               <span
                                 key={index}
-                                className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10"
+                                className="inline-flex items-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/60 dark:to-pink-900/60 px-2.5 py-1 text-xs font-semibold text-purple-800 dark:text-purple-200 shadow-sm border border-purple-200/50 dark:border-purple-700/50 hover:scale-105 transition-all duration-200 cursor-default"
                               >
                                 {tagRelation.tags?.name}
                               </span>

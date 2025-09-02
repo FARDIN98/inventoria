@@ -66,15 +66,16 @@ export default function HomePage() {
   // Render content for both authenticated and non-authenticated users
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
       {/* Hero Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 dark:from-blue-400/5 dark:via-purple-400/5 dark:to-pink-400/5 backdrop-blur-3xl"></div>
+        <div className="relative max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent sm:text-6xl animate-pulse">
               {t('home.welcome', 'Welcome to Inventoria')}
             </h1>
-            <p className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
+            <p className="mt-6 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto font-medium">
               {t('home.description', 'Organize and manage your inventories with ease. Create, track, and share your collections with powerful tools and intuitive design.')}
             </p>
           </div>
@@ -83,10 +84,10 @@ export default function HomePage() {
 
       {/* Dashboard Button - Only for authenticated users */}
       {user && (
-        <section className="py-6 px-4 sm:px-6 lg:px-8">
+        <section className="py-8 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto text-center">
             <Link href="/dashboard">
-              <Button size="lg" className="px-8 py-3">
+              <Button size="lg" className="px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 border-0">
                 {t('home.goToDashboard', 'Go to Dashboard')}
               </Button>
             </Link>
@@ -95,13 +96,13 @@ export default function HomePage() {
       )}
 
       {/* Latest Inventories Section */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">
+          <div className="mb-10 text-center">
+            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent mb-4">
               {t('home.latestInventories', 'Latest Inventories')}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               {t('home.latestInventoriesDescription', 'Discover the most recently created inventories from our community')}
             </p>
           </div>
@@ -115,13 +116,13 @@ export default function HomePage() {
       
 
       {/* Popular Inventories Section */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">
+          <div className="mb-10 text-center">
+            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-orange-600 to-red-600 dark:from-orange-400 dark:to-red-400 bg-clip-text text-transparent mb-4">
               {t('home.popularInventories', 'Popular Inventories')}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               {t('home.popularInventoriesDescription', 'Explore the most popular and trending inventories')}
             </p>
           </div>
@@ -133,13 +134,13 @@ export default function HomePage() {
       </section>
 
       {/* Tag Cloud Section */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-violet-50/50 via-purple-50/30 to-fuchsia-50/50 dark:from-violet-950/20 dark:via-purple-950/10 dark:to-fuchsia-950/20">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-violet-600 to-fuchsia-600 dark:from-violet-400 dark:to-fuchsia-400 bg-clip-text text-transparent mb-4">
               {t('home.popularTags', 'Popular Tags')}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               {t('home.popularTagsDescription', 'Browse inventories by popular tags and categories')}
             </p>
           </div>
@@ -148,24 +149,24 @@ export default function HomePage() {
       </section>
 
       {/* Call to Action Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/50">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-100/80 via-blue-100/60 to-indigo-100/80 dark:from-slate-900/80 dark:via-blue-900/60 dark:to-indigo-900/80 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-700 to-blue-700 dark:from-slate-300 dark:to-blue-300 bg-clip-text text-transparent mb-6">
             {t('home.ctaTitle', 'Ready to Get Started?')}
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
             {t('home.ctaDescription', 'Join thousands of users who are already organizing their inventories with Inventoria')}
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <a 
               href="/register" 
-              className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-10 py-4 text-lg font-semibold text-white shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 border-0"
             >
               {t('home.getStarted', 'Get Started')}
             </a>
             <a 
               href="/login" 
-              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-8 py-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-10 py-4 text-lg font-semibold text-slate-700 dark:text-slate-300 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hover:bg-slate-50 dark:hover:bg-slate-700"
             >
               {t('home.signIn', 'Sign In')}
             </a>

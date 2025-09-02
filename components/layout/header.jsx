@@ -57,7 +57,7 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo/Brand */}
           <div className="flex items-center space-x-2">
-            <Link href="/" className="font-bold text-xl hover:opacity-80 transition-opacity">
+            <Link href="/" className="font-bold text-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent hover:scale-105 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 dark:hover:from-purple-400 dark:hover:via-pink-400 dark:hover:to-blue-400 transition-all duration-300 ease-in-out transform">
               Inventoria
             </Link>
           </div>

@@ -86,25 +86,25 @@ export default function AuthForm({
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center dark:bg-black py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <Card className="shadow-2xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-          <CardHeader className="space-y-4 pb-6">
+        <Card className="shadow-2xl border-0 bg-gradient-to-br from-white/90 via-blue-50/80 to-indigo-50/90 dark:from-slate-900/90 dark:via-blue-950/80 dark:to-indigo-950/90 backdrop-blur-xl border border-white/20 dark:border-slate-700/30">
+          <CardHeader className="space-y-6 pb-8 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-t-lg">
             <div className="text-center">
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent mb-3 animate-pulse">
                 Inventoria
               </h1>
-              <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded-full mb-4"></div>
+              <div className="w-20 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 mx-auto rounded-full mb-6 shadow-lg"></div>
             </div>
-            <CardTitle className="text-2xl font-bold text-center text-gray-900 dark:text-white">{title}</CardTitle>
-            <CardDescription className="text-center text-gray-600 dark:text-gray-300">
+            <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-white bg-clip-text text-transparent">{title}</CardTitle>
+            <CardDescription className="text-center text-slate-600 dark:text-slate-300 font-medium">
               {description}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <CardContent className="space-y-8 p-8">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div className="space-y-3">
+                <label htmlFor="email" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                   {t('auth.email', 'Email')}
                 </label>
                 <Input
@@ -115,11 +115,11 @@ export default function AuthForm({
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isSubmitting || loading}
-                  className="h-11 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                  className="h-12 bg-gradient-to-r from-white to-blue-50/50 dark:from-slate-800 dark:to-blue-950/50 border-2 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 shadow-sm hover:shadow-md transition-all duration-200"
                 />
               </div>
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="space-y-3">
+                <label htmlFor="password" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                   {t('auth.password', 'Password')}
                 </label>
                 <Input
@@ -130,18 +130,18 @@ export default function AuthForm({
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isSubmitting || loading}
-                  className="h-11 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                  className="h-12 bg-gradient-to-r from-white to-blue-50/50 dark:from-slate-800 dark:to-blue-950/50 border-2 border-slate-200 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 shadow-sm hover:shadow-md transition-all duration-200"
                 />
               </div>
               {error && (
-                <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                <div className="p-4 text-sm text-red-700 dark:text-red-300 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/30 dark:to-pink-950/30 border-2 border-red-200 dark:border-red-800 rounded-xl shadow-md">
                   {error}
                 </div>
               )}
               <Button 
                 type="submit" 
                 disabled={isSubmitting || loading || !email || !password}
-                className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full h-12 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-semibold shadow-xl hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none border-0"
               >
                 {isSubmitting || loading ? t('auth.pleaseWait', 'Please wait...') : submitText}
               </Button>
@@ -151,10 +151,10 @@ export default function AuthForm({
               <>
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+                    <span className="w-full border-t-2 border-gradient-to-r from-slate-200 via-blue-200 to-indigo-200 dark:from-slate-600 dark:via-blue-600 dark:to-indigo-600" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">{t('auth.orContinueWith', 'Or continue with')}</span>
+                    <span className="bg-gradient-to-r from-white via-blue-50 to-white dark:from-slate-900 dark:via-blue-950 dark:to-slate-900 px-4 py-1 text-slate-500 dark:text-slate-400 font-semibold rounded-full">{t('auth.orContinueWith', 'Or continue with')}</span>
                   </div>
                 </div>
                 
@@ -164,7 +164,7 @@ export default function AuthForm({
                     type="button" 
                     onClick={() => handleSocialLogin('google')}
                     disabled={isSubmitting || loading}
-                    className="h-11 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-12 border-2 border-slate-200 dark:border-slate-600 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 text-slate-700 dark:text-slate-300 hover:from-slate-50 hover:to-slate-100 dark:hover:from-slate-700 dark:hover:to-slate-600 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                       <path
@@ -191,7 +191,7 @@ export default function AuthForm({
                     type="button" 
                     onClick={() => handleSocialLogin('facebook')}
                     disabled={isSubmitting || loading}
-                    className="h-11 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-12 border-2 border-slate-200 dark:border-slate-600 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-700 text-slate-700 dark:text-slate-300 hover:from-slate-50 hover:to-slate-100 dark:hover:from-slate-700 dark:hover:to-slate-600 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -202,9 +202,9 @@ export default function AuthForm({
               </>
             )}
             
-            <div className="text-center text-sm pt-4">
-              <span className="text-gray-600 dark:text-gray-400">{linkLabel} </span>
-              <Link href={linkHref} className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium transition-colors duration-200">
+            <div className="text-center text-sm pt-6">
+              <span className="text-slate-600 dark:text-slate-400 font-medium">{linkLabel} </span>
+              <Link href={linkHref} className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-300 dark:hover:to-indigo-300 font-bold transition-all duration-200 hover:underline">
                 {linkText}
               </Link>
             </div>

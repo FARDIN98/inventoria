@@ -118,7 +118,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="rounded-md border">
+      <div className="rounded-xl border bg-gradient-to-br from-white/90 to-amber-50/80 dark:from-slate-900/90 dark:to-amber-950/80 border-amber-200/50 dark:border-amber-800/30 shadow-xl backdrop-blur-sm">
         <div className="p-8 text-center">
           <p className="text-muted-foreground">{t('admin.loadingDashboard')}</p>
         </div>
@@ -128,12 +128,12 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="rounded-md border border-destructive/20">
+      <div className="rounded-xl border bg-gradient-to-br from-red-50/90 to-pink-50/80 dark:from-red-950/90 dark:to-pink-950/80 border-red-200/50 dark:border-red-800/30 shadow-xl backdrop-blur-sm">
         <div className="p-8 text-center">
-          <p className="text-destructive mb-4">{error}</p>
+          <p className="text-destructive mb-4 font-medium">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="text-primary hover:underline"
+            className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-md hover:shadow-lg"
           >
             {t('admin.tryAgain')}
           </button>
@@ -143,25 +143,29 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-4">
-      <AdminToolbar
-        selectedUsers={selectedUsers}
-        onBlockUsers={handleBulkBlock}
-        onUnblockUsers={handleBulkUnblock}
-        onDeleteUsers={handleBulkDelete}
-        onPromoteUsers={handleBulkPromote}
-        onDemoteUsers={handleBulkDemote}
-        loading={operationLoading}
-      />
+    <div className="space-y-6">
+      <div className="bg-gradient-to-br from-white/90 to-amber-50/80 dark:from-slate-900/90 dark:to-amber-950/80 border-amber-200/50 dark:border-amber-800/30 shadow-xl backdrop-blur-sm rounded-xl border">
+        <AdminToolbar
+          selectedUsers={selectedUsers}
+          onBlockUsers={handleBulkBlock}
+          onUnblockUsers={handleBulkUnblock}
+          onDeleteUsers={handleBulkDelete}
+          onPromoteUsers={handleBulkPromote}
+          onDemoteUsers={handleBulkDemote}
+          loading={operationLoading}
+        />
+      </div>
       
-      <UserManagementTable
-        users={users}
-        selectedUsers={selectedUsers}
-        onSelectionChange={setSelectedUsers}
-      />
+      <div className="bg-gradient-to-br from-white/90 to-orange-50/80 dark:from-slate-900/90 dark:to-orange-950/80 border-orange-200/50 dark:border-orange-800/30 shadow-xl backdrop-blur-sm rounded-xl border">
+        <UserManagementTable
+          users={users}
+          selectedUsers={selectedUsers}
+          onSelectionChange={setSelectedUsers}
+        />
+      </div>
       
       {users.length > 0 && (
-        <div className="text-sm text-muted-foreground text-center pt-4">
+        <div className="text-sm text-muted-foreground text-center pt-4 p-4 bg-gradient-to-r from-slate-100/80 to-amber-100/80 dark:from-slate-800/80 dark:to-amber-900/80 rounded-xl backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50">
           {t('admin.totalUsers', { count: users.length })}
         </div>
       )}

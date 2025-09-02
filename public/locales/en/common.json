@@ -199,7 +199,7 @@
      "description": "Discover and explore amazing inventory collections from creators around the world. Join our community to create and share your own collections.",
      "goToDashboard": "Go To Dashboard",
      "latestInventories": "Latest Inventories",
-     "latestInventoriesDescription": "Recently created inventory collections",
+     "latestInventoriesDescription": "Click the inventory title to view details",
      "popularInventories": "Top 5 Popular Inventories",
      "popularInventoriesDescription": "Most viewed and liked inventory collections",
      "popularTags": "Popular Tags",
