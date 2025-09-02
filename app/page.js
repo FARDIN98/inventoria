@@ -18,9 +18,7 @@ export default function HomePage() {
     loading: dataLoading,
     error,
     loadHomeData,
-    getLatestInventories,
-    getPopularInventories,
-    getPopularTags
+    isDataFresh
   } = useHomeStore()
   const router = useRouter()
 
@@ -29,10 +27,12 @@ export default function HomePage() {
     initialize()
   }, [])
   
-  // Fetch home page data
+  // Fetch home page data only if not fresh (optimized API calls)
   useEffect(() => {
-    loadHomeData()
-  }, [loadHomeData])
+    if (!isDataFresh()) {
+      loadHomeData()
+    }
+  }, [loadHomeData, isDataFresh])
 
   // No redirect needed - authenticated users can view the home page
 
@@ -106,7 +106,7 @@ export default function HomePage() {
             </p>
           </div>
           <InventoryTable 
-            data={getLatestInventories()} 
+            data={homeData.latestInventories} 
             title={t('home.latestInventories', 'Latest Inventories')}
           />
         </div>
@@ -126,7 +126,7 @@ export default function HomePage() {
             </p>
           </div>
           <InventoryTable 
-            data={getPopularInventories()} 
+            data={homeData.popularInventories} 
             title={t('home.popularInventories', 'Popular Inventories')}
           />
         </div>
@@ -143,7 +143,7 @@ export default function HomePage() {
               {t('home.popularTagsDescription', 'Browse inventories by popular tags and categories')}
             </p>
           </div>
-          <TagCloud tags={getPopularTags()} />
+          <TagCloud tags={homeData.popularTags} />
         </div>
       </section>
 
