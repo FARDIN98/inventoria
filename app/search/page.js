@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Search, Package, FileText, Filter, SortAsc, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -16,12 +16,9 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 /**
- * Dedicated search results page with comprehensive filtering and pagination
- * Handles URL query parameters and provides detailed search results
- * 
- * @returns {JSX.Element} Complete search results page
+ * Search page content component that uses useSearchParams
  */
-export default function SearchPage() {
+function SearchPageContent() {
   const { t } = useTranslation()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -501,5 +498,35 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * Main search page component with Suspense boundary
+ */
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-4">Search Results</h1>
+          <div className="flex gap-2 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search inventories..." className="pl-10" disabled />
+            </div>
+            <Button disabled>Search</Button>
+          </div>
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </div>
+    }>
+      <SearchPageContent />
+    </Suspense>
   )
 }

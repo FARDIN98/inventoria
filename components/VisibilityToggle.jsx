@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Eye, EyeOff } from 'lucide-react'
 import { toggleInventoryVisibilityAction } from '@/lib/inventory-actions'
@@ -10,6 +11,7 @@ import { useRouter } from 'next/navigation'
 export default function VisibilityToggle({ inventoryId, isPublic, canToggle }) {
   const [isToggling, setIsToggling] = useState(false)
   const [currentVisibility, setCurrentVisibility] = useState(isPublic)
+  const { t } = useTranslation()
   const router = useRouter()
 
   const handleToggle = async () => {
@@ -56,9 +58,9 @@ export default function VisibilityToggle({ inventoryId, isPublic, canToggle }) {
       {isToggling ? (
         'Updating...'
       ) : currentVisibility ? (
-        <><EyeOff className="h-4 w-4" />Make Private</>
+        <><EyeOff className="h-4 w-4" />{t('common.private')}</>
       ) : (
-        <><Eye className="h-4 w-4" />Make Public</>
+        <><Eye className="h-4 w-4" />{t('common.public')}</>
       )}
     </Button>
   )

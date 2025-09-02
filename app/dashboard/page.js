@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import useAuthStore from '@/lib/stores/auth';
-import useInventoryStore from '@/lib/stores/inventory';
+import useDashboardStore from '@/lib/stores/dashboard';
 import { requireAuth } from '@/lib/inventory-actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,154 +26,120 @@ export default function DashboardPage() {
     error,
     isDeleting,
     togglingVisibility,
-    loadUserInventories,
-    loadAllInventoriesForAdmin,
-    loadPublicInventories,
-    setSelectedInventories,
-    setSelectedPublicInventories,
+    isAdmin,
+    loadDashboardData,
+    handleInventorySelect,
+    handleSelectAllInventories,
+    handlePublicInventorySelect,
+    handleSelectAllPublicInventories,
     deleteSelectedInventories,
-    toggleVisibility
-  } = useInventoryStore();
+    toggleVisibility,
+    deletePublicInventory,
+    handleWindowResize,
+    cleanup
+  } = useDashboardStore();
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Memoized auth and data loading
+  const checkAuthAndLoadData = useCallback(async () => {
+    if (isLoading) return;
+    
+    try {
+      // Check authentication and redirect if needed
+      await requireAuth();
+      
+      // Load dashboard data with caching
+      await loadDashboardData();
+    } catch (err) {
+      console.error('Dashboard error:', err);
+      router.push('/login');
+    }
+  }, [isLoading, loadDashboardData, router]);
 
   useEffect(() => {
-    async function checkAuthAndLoadData() {
-      if (isLoading) return;
-      
-      try {
-        // Check authentication and redirect if needed
-        await requireAuth();
-        
-        // First, load user inventories to get admin status
-        const userInventoriesResult = await loadUserInventories();
-        
-        // Get admin status from the API response
-        const userIsAdmin = userInventoriesResult?.isAdmin || false;
-        setIsAdmin(userIsAdmin);
-        
-        // If user is admin, load all inventories instead of just user's own
-        if (userIsAdmin) {
-          await loadAllInventoriesForAdmin();
-        }
-        
-        // Load public inventories with write access (only for non-admin users)
-        if (!userIsAdmin) {
-          await loadPublicInventories();
-        }
-      } catch (err) {
-        console.error('Dashboard error:', err);
-        router.push('/login');
-      }
-    }
-
     checkAuthAndLoadData();
-  }, [isLoading, user, router, loadUserInventories, loadAllInventoriesForAdmin, loadPublicInventories]);
+  }, [checkAuthAndLoadData]);
 
-  // Handle inventory selection
-  const handleInventorySelect = (inventoryId, checked) => {
-    const newSelected = new Set(selectedInventories);
-    if (checked) {
-      newSelected.add(inventoryId);
-    } else {
-      newSelected.delete(inventoryId);
-    }
-    setSelectedInventories(newSelected);
-  };
+  // Window resize handling with debouncing
+  useEffect(() => {
+    const handleResize = () => handleWindowResize();
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cleanup(); // Clean up any pending timeouts
+    };
+  }, [handleWindowResize, cleanup]);
 
-  // Handle select all inventories
-  const handleSelectAllInventories = (checked) => {
-    if (checked) {
-      setSelectedInventories(new Set(inventories.map(inv => inv.id)));
-    } else {
-      setSelectedInventories(new Set());
-    }
-  };
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => cleanup();
+  }, [cleanup]);
 
-  // Handle public inventory selection
-  const handlePublicInventorySelect = (inventoryId, checked) => {
-    const newSelected = new Set(selectedPublicInventories);
-    if (checked) {
-      newSelected.add(inventoryId);
-    } else {
-      newSelected.delete(inventoryId);
-    }
-    setSelectedPublicInventories(newSelected);
-  };
+  // Memoized handlers to prevent unnecessary re-renders
+  const memoizedHandleInventorySelect = useCallback((inventoryId, checked) => {
+    handleInventorySelect(inventoryId, checked);
+  }, [handleInventorySelect]);
 
-  // Handle select all public inventories
-  const handleSelectAllPublicInventories = (checked) => {
-    if (checked) {
-      setSelectedPublicInventories(new Set(publicInventories.map(inv => inv.id)));
-    } else {
-      setSelectedPublicInventories(new Set());
-    }
-  };
+  const memoizedHandleSelectAllInventories = useCallback((checked) => {
+    handleSelectAllInventories(checked);
+  }, [handleSelectAllInventories]);
 
-  // Handle view selected public inventories
-  const handleViewPublicInventories = () => {
+  const memoizedHandlePublicInventorySelect = useCallback((inventoryId, checked) => {
+    handlePublicInventorySelect(inventoryId, checked);
+  }, [handlePublicInventorySelect]);
+
+  const memoizedHandleSelectAllPublicInventories = useCallback((checked) => {
+    handleSelectAllPublicInventories(checked);
+  }, [handleSelectAllPublicInventories]);
+
+  // Memoized action handlers
+  const handleViewPublicInventories = useCallback(() => {
     if (selectedPublicInventories.size > 0) {
       const inventoryIds = Array.from(selectedPublicInventories);
-      // Open first selected inventory, or could open multiple tabs
       router.push(`/inventory/${inventoryIds[0]}`);
     }
-  };
+  }, [selectedPublicInventories, router]);
 
-  // Handle edit public inventory
-  const handleEditPublicInventory = (inventoryId) => {
+  const handleEditPublicInventory = useCallback((inventoryId) => {
     router.push(`/inventory/edit?id=${inventoryId}`);
-  };
+  }, [router]);
 
-  // Handle delete public inventory
-  const handleDeletePublicInventory = async (inventoryId) => {
-    try {
-      const result = await deleteInventoryAction(inventoryId);
-      if (result.success) {
-        // Remove deleted inventory from public inventories state
-        setPublicInventories(prev => prev.filter(inv => inv.id !== inventoryId));
-        setSelectedPublicInventories(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(inventoryId);
-          return newSet;
-        });
-      } else {
-        setError(result.error || 'Failed to delete inventory');
-      }
-    } catch (err) {
-      setError('An unexpected error occurred while deleting inventory');
-    }
-  };
-
-  // Handle edit action
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     if (selectedInventories.size === 1) {
       const inventoryId = Array.from(selectedInventories)[0];
       router.push(`/inventory/edit?id=${inventoryId}`);
     }
-  };
+  }, [selectedInventories, router]);
 
-  // Handle visibility toggle
-  const handleToggleVisibility = async (inventoryId) => {
+  const handleToggleVisibility = useCallback(async (inventoryId) => {
     try {
       await toggleVisibility(inventoryId);
     } catch (err) {
       console.error('Toggle visibility error:', err);
     }
-  };
+  }, [toggleVisibility]);
 
-  // Handle delete selected inventories
-  const handleDeleteSelected = async () => {
+  const handleDeleteSelected = useCallback(async () => {
     if (selectedInventories.size === 0) return;
     
     try {
-      const inventoryIds = Array.from(selectedInventories);
-      await deleteSelectedInventories(inventoryIds);
+      await deleteSelectedInventories();
       setDeleteDialogOpen(false);
     } catch (err) {
       console.error('Delete error:', err);
     }
-  };
+  }, [selectedInventories, deleteSelectedInventories]);
+
+  const handleDeletePublicInventoryAction = useCallback(async (inventoryId) => {
+    try {
+      await deletePublicInventory(inventoryId);
+    } catch (err) {
+      console.error('Delete public inventory error:', err);
+    }
+  }, [deletePublicInventory]);
 
   if (isLoading || loading) {
     return (
@@ -310,12 +276,12 @@ export default function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>{t('dashboard.title')}</CardTitle>
-          {/* <CardDescription>
+          <CardDescription>
             {inventories && inventories.length > 0 
               ? t('dashboard.inventoryCount', { count: inventories.length })
             : t('dashboard.noInventoryItems')
             }
-          </CardDescription> */}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {!inventories || inventories.length === 0 ? (
@@ -344,7 +310,7 @@ export default function DashboardPage() {
                   <TableHead className="w-12">
                     <Checkbox
                       checked={selectedInventories.size === inventories.length && inventories.length > 0}
-                      onCheckedChange={handleSelectAllInventories}
+                      onCheckedChange={memoizedHandleSelectAllInventories}
                       aria-label="Select all inventories"
                     />
                   </TableHead>
@@ -366,7 +332,7 @@ export default function DashboardPage() {
                     <TableCell>
                       <Checkbox
                         checked={selectedInventories.has(inventory.id)}
-                        onCheckedChange={(checked) => handleInventorySelect(inventory.id, checked)}
+                        onCheckedChange={(checked) => memoizedHandleInventorySelect(inventory.id, checked)}
                         aria-label={`Select ${inventory.title}`}
                       />
                     </TableCell>
@@ -482,7 +448,7 @@ export default function DashboardPage() {
                       <AlertDialogAction
                         onClick={async () => {
                           const deletePromises = Array.from(selectedPublicInventories).map(inventoryId => 
-                            handleDeletePublicInventory(inventoryId)
+                            handleDeletePublicInventoryAction(inventoryId)
                           );
                           await Promise.all(deletePromises);
                         }}
@@ -506,7 +472,7 @@ export default function DashboardPage() {
             <CardTitle>{t('dashboard.publicInventoriesWithAccess')}</CardTitle>
             {/* <CardDescription>
               {publicInventories && publicInventories.length > 0 
-                ? t('dashboard.writeAccessCount', { count: publicInventories.length })
+                ? t('dashboard.writeAccessCount', 'Public inventories with write access', { count: publicInventories.length })
                 : t('dashboard.noPublicInventoriesWithAccess')
               }
             </CardDescription> */}
@@ -529,7 +495,7 @@ export default function DashboardPage() {
                     <TableHead className="w-12">
                       <Checkbox
                         checked={selectedPublicInventories.size === publicInventories.length && publicInventories.length > 0}
-                        onCheckedChange={handleSelectAllPublicInventories}
+                        onCheckedChange={memoizedHandleSelectAllPublicInventories}
                         aria-label="Select all public inventories"
                       />
                     </TableHead>
@@ -551,7 +517,7 @@ export default function DashboardPage() {
                       <TableCell>
                         <Checkbox
                           checked={selectedPublicInventories.has(inventory.id)}
-                          onCheckedChange={(checked) => handlePublicInventorySelect(inventory.id, checked)}
+                          onCheckedChange={(checked) => memoizedHandlePublicInventorySelect(inventory.id, checked)}
                           aria-label={`Select ${inventory.title}`}
                         />
                       </TableCell>

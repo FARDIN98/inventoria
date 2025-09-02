@@ -31,7 +31,9 @@
     "toggleMobileMenu": "Toggle mobile menu",
     "add": "Add",
     "makePrivate": "Make Private",
-    "makePublic": "Make Public"
+    "makePublic": "Make Public",
+    "customId": "Custom ID",
+    "customFormat": "No custom format configured"
   },
   "common": {
     "loading": "Loading...",
@@ -72,13 +74,14 @@
     "noInventoriesAdmin": "No inventories have been created yet.",
     "noInventoriesUser": "You haven't created any inventories yet.",
     "noInventoriesDescription": "Get started by creating your first inventory item",
-    "inventoryCount": "You have {{count}} inventory{{count === 1 ? '' : 's'}}",
+    "inventoryCount": "You have {{count}} inventory",
     "inventoryCount_plural": "You have {{count}} inventories",
     "noInventoryItems": "No inventory items found",
     "publicInventoriesWithAccess": "Public Inventories with Access",
     "noPublicInventories": "No Public Inventories",
     "noPublicInventoriesDescription": "There are no public inventories available at the moment.",
-    "noPublicInventoriesWithAccess": "No public inventories with access found"
+    "noPublicInventoriesWithAccess": "No public inventories with access found",
+    "writeAccessCount": "You have {{count}} inventory"
   },
   "dialogs": {
     "deleteTitle": "Delete Inventories",
@@ -183,7 +186,13 @@
      "inventoryDetails": "Inventory Details",
      "basicInformation": "Basic information about this inventory",
      "noDescription": "No description provided",
-     "lastUpdated": "Last Updated"
+     "lastUpdated": "Last Updated",
+     "tabs": {
+        "items": "Items",
+        "discussion": "Discussion",
+        "fieldSettings": "Field Settings",
+        "statistics": "Statistics"
+     }
    },
    "home": {
      "welcome": "Welcome to Inventoria",

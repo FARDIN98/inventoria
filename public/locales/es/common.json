@@ -31,7 +31,9 @@
     "toggleMobileMenu": "Alternar menú móvil",
     "add": "Agregar",
     "makePrivate": "Hacer Privado",
-    "makePublic": "Hacer Público"
+    "makePublic": "Hacer Público",
+    "customId": "Identificación personalizada",
+    "customFormat": "No hay ningún formato personalizado configurado"
   },
   "common": {
     "loading": "Cargando...",
@@ -71,7 +73,7 @@
     "noInventoriesAdmin": "Aún no se han creado inventarios.",
     "noInventoriesUser": "Aún no has creado ningún inventario.",
     "noInventoryItems": "No se encontraron elementos de inventario",
-    "inventoryCount": "Tienes {{count}} inventario{{count === 1 ? '' : 's'}}",
+    "inventoryCount": "Tienes {{count}} inventario",
     "publicInventoriesWithAccess": "Inventarios Públicos con Acceso",
     "noPublicInventories": "Sin Inventarios Públicos",
     "noPublicInventoriesDescription": "No hay inventarios públicos disponibles en este momento.",
@@ -180,7 +182,13 @@
      "inventoryDetails": "Detalles del Inventario",
      "basicInformation": "Información básica sobre este inventario",
      "noDescription": "No se proporcionó descripción",
-     "lastUpdated": "Última Actualización"
+     "lastUpdated": "Última Actualización",
+     "tabs": {
+        "items": "Elementos",
+        "discussion": "Discusión",
+        "fieldSettings": "Configuración de campo",
+        "statistics": "Estadística"
+     }
    },
    "home": {
      "welcome": "Bienvenido a Inventoria",
