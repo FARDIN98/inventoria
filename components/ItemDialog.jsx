@@ -40,7 +40,7 @@ export default function ItemDialog({
   const { loading, error, execute: executeSubmit, reset: resetAsyncOperation } = useAsyncOperation(
     async (formDataToSubmit) => {
       if (isEdit) {
-        return await editItemAction(item.id, formDataToSubmit);
+        return await editItemAction(item.id, formDataToSubmit, item.version);
       } else {
         return await addItemAction(inventoryId, formDataToSubmit);
       }

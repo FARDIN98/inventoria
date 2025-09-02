@@ -176,7 +176,8 @@
      "number3": "Number 3",
      "bool1": "Bool 1",
      "bool2": "Bool 2",
-     "bool3": "Bool 3"
+     "bool3": "Bool 3",
+     "likes": "Likes"
    },
    "inventory": {
      "adminView": "Admin View",

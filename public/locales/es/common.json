@@ -172,7 +172,8 @@
      "number3": "Número 3",
      "bool1": "Booleano 1",
      "bool2": "Booleano 2",
-     "bool3": "Booleano 3"
+     "bool3": "Booleano 3",
+     "likes": "gustos"
    },
    "inventory": {
      "adminView": "Vista de Administrador",

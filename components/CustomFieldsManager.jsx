@@ -190,7 +190,7 @@ function SortableField({ field, index, onUpdate, onRemove, disabled, validationE
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onRemove(index)}
+              onClick={async () => await onRemove(index)}
               disabled={disabled}
             >
               <Trash2 className="h-4 w-4 text-destructive" />
@@ -381,10 +381,14 @@ export default function CustomFieldsManager({
     }
   };
 
-  const removeField = (index) => {
+  const removeField = async (index) => {
     const fieldId = fields[index]?.id;
     if (fieldId) {
-      removeFieldTemplate(fieldId);
+      const result = await removeFieldTemplate(fieldId);
+      if (!result.success) {
+        console.error('Failed to remove field:', result.error);
+        // You could also show a toast notification here
+      }
     }
   };
 
@@ -483,7 +487,7 @@ export default function CustomFieldsManager({
                   index={index}
                   onUpdate={updateField}
                   onRemove={removeField}
-                  disabled={fields.length <= 1}
+                  disabled={false}
                   validationErrors={validationErrors}
                 />
               ))}
