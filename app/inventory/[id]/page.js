@@ -15,6 +15,8 @@ import VisibilityToggle from '@/components/VisibilityToggle';
 import { getCurrentUserServer } from '@/lib/auth-actions';
 import InventoryDetailClient from '@/components/InventoryDetailClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function InventoryDetailPage({ params }) {
   const { id } = await params;
   
