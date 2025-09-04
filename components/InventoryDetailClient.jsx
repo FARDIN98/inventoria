@@ -71,29 +71,29 @@ export default function InventoryDetailClient({
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
       <div className="container mx-auto py-8 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 bg-gradient-to-r from-white/80 to-blue-50/80 dark:from-slate-900/80 dark:to-blue-950/80 rounded-xl backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 shadow-lg">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-6 bg-gradient-to-r from-white/80 to-blue-50/80 dark:from-slate-900/80 dark:to-blue-950/80 rounded-xl backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 shadow-lg gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
             <Link href="/dashboard">
-              <Button variant="ghost" size="sm" className="hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-500 hover:text-white transition-all duration-200">
+              <Button variant="ghost" size="sm" className="hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-500 hover:text-white transition-all duration-200 w-fit">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {t('actions.back')}
               </Button>
             </Link>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent">{inventory.title}</h1>
+            <div className="flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent">{inventory.title}</h1>
                 {isAdmin && (
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md animate-pulse">
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md animate-pulse w-fit">
                     {t('inventory.adminView')}
                   </Badge>
                 )}
               </div>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm sm:text-base">
                 {t('inventory.createdBy')} {inventory.users?.name || inventory.users?.email || t('common.unknown')} {t('inventory.on')} {new Date(inventory.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             <VisibilityToggle 
               inventoryId={inventory.id}
               isPublic={inventory.isPublic}
@@ -101,16 +101,18 @@ export default function InventoryDetailClient({
             />
             {canEdit && (
               <>
-                <Link href={`/inventory/${inventory.id}/settings/custom-id`}>
-                  <Button variant="outline" className="flex items-center gap-2 bg-white/80 dark:bg-slate-700/80 border-slate-200 dark:border-slate-600 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:text-white hover:border-transparent transition-all duration-200">
+                <Link href={`/inventory/${inventory.id}/settings/custom-id`} className="w-full sm:w-auto">
+                  <Button variant="outline" className="flex items-center gap-2 bg-white/80 dark:bg-slate-700/80 border-slate-200 dark:border-slate-600 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:text-white hover:border-transparent transition-all duration-200 w-full sm:w-auto">
                     <Settings className="h-4 w-4" />
-                    Create Custom ID 
+                    <span className="hidden sm:inline">Create Custom ID</span>
+                    <span className="sm:hidden">Custom ID</span>
                   </Button>
                 </Link>
-                <Link href={`/inventory/edit?id=${inventory.id}`}>
-                  <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Link href={`/inventory/edit?id=${inventory.id}`} className="w-full sm:w-auto">
+                  <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto">
                     <Edit className="h-4 w-4" />
-                    {t('inventory.editInventory')}
+                    <span className="hidden sm:inline">{t('inventory.editInventory')}</span>
+                    <span className="sm:hidden">Edit</span>
                   </Button>
                 </Link>
               </>
@@ -233,28 +235,28 @@ export default function InventoryDetailClient({
 
         {/* Tabbed Content */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-          <TabsList className={`grid w-full ${canManageFields ? 'grid-cols-4' : 'grid-cols-3'} bg-gradient-to-r from-slate-100 to-blue-100 dark:from-slate-800 dark:to-blue-900 p-1 rounded-xl shadow-lg`}>
-            <TabsTrigger value="items" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200">
-              <Database className="h-4 w-4" />
-              {t('inventory.tabs.items', 'Items')}
+          <TabsList className={`grid w-full ${canManageFields ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3 md:grid-cols-3'} gap-2 bg-gradient-to-r  p-2 rounded-xl shadow-lg md:gap-1 md:p-1`}>
+            <TabsTrigger value="items" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2 text-xs sm:text-sm bg-white/50 dark:bg-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-600/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 min-h-[2.5rem] rounded-md border border-transparent data-[state=active]:border-blue-300">
+              <Database className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span className="truncate">{t('inventory.tabs.items', 'Items')}</span>
             </TabsTrigger>
-            <TabsTrigger value="discussion" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200">
-              <MessageCircle className="h-4 w-4" />
-              {t('inventory.tabs.discussion', 'Discussion')}
+            <TabsTrigger value="discussion" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2 text-xs sm:text-sm bg-white/50 dark:bg-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-600/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 min-h-[2.5rem] rounded-md border border-transparent data-[state=active]:border-emerald-300">
+              <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span className="truncate">{t('inventory.tabs.discussion', 'Discussion')}</span>
             </TabsTrigger>
             {canManageFields && (
-              <TabsTrigger value="fields" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200">
-                <Wrench className="h-4 w-4" />
-                {t('inventory.tabs.fieldSettings', 'Field Settings')}
+              <TabsTrigger value="fields" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2 text-xs sm:text-sm bg-white/50 dark:bg-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-600/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 min-h-[2.5rem] rounded-md border border-transparent data-[state=active]:border-purple-300">
+                <Wrench className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="truncate text-center leading-tight text-xs sm:text-sm">{t('inventory.tabs.fieldSettings', 'Fields')}</span>
               </TabsTrigger>
             )}
-            <TabsTrigger value="stats" className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200">
-              <BarChart3 className="h-4 w-4" />
-              {t('inventory.tabs.statistics', 'Statistics')}
+            <TabsTrigger value="stats" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2 text-xs sm:text-sm bg-white/50 dark:bg-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-600/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 min-h-[2.5rem] rounded-md border border-transparent data-[state=active]:border-orange-300">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+              <span className="truncate">{t('inventory.tabs.statistics', 'Stats')}</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="items" className="space-y-6">
+          <TabsContent value="items" className="space-y-6 mt-8 md:mt-6">
             <Card className="bg-gradient-to-br from-white/90 to-blue-50/80 dark:from-slate-900/90 dark:to-blue-950/80 border-blue-200/50 dark:border-blue-800/30 shadow-xl backdrop-blur-sm">
               <CardContent className="pt-6">
                 <ItemsTableWrapper 
@@ -269,7 +271,7 @@ export default function InventoryDetailClient({
             </Card>
           </TabsContent>
 
-          <TabsContent value="discussion" className="space-y-6">
+          <TabsContent value="discussion" className="space-y-6 mt-8 md:mt-6">
             <Card className="h-[600px] bg-gradient-to-br from-white/90 to-emerald-50/80 dark:from-slate-900/90 dark:to-emerald-950/80 border-emerald-200/50 dark:border-emerald-800/30 shadow-xl backdrop-blur-sm">
               <CardContent className="p-0 h-full">
                 <DiscussionPanel
@@ -284,7 +286,7 @@ export default function InventoryDetailClient({
           </TabsContent>
 
           {canManageFields && (
-            <TabsContent value="fields" className="space-y-6">
+            <TabsContent value="fields" className="space-y-6 mt-8 md:mt-6">
               <Card className="bg-gradient-to-br from-white/90 to-purple-50/80 dark:from-slate-900/90 dark:to-purple-950/80 border-purple-200/50 dark:border-purple-800/30 shadow-xl backdrop-blur-sm">
                 {/* <CardHeader>
                   <CardTitle>{t('inventory.fieldSettings.title')}</CardTitle>
@@ -308,7 +310,7 @@ export default function InventoryDetailClient({
             </TabsContent>
           )}
 
-          <TabsContent value="stats" className="space-y-6">
+          <TabsContent value="stats" className="space-y-6 mt-8 md:mt-6">
             <div className="bg-gradient-to-br from-white/90 to-orange-50/80 dark:from-slate-900/90 dark:to-orange-950/80 border-orange-200/50 dark:border-orange-800/30 shadow-xl backdrop-blur-sm rounded-lg">
               <InventoryStats
                 inventory={inventory}

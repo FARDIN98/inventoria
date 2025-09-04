@@ -156,8 +156,8 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-pink-950/20 rounded-2xl -z-10"></div>
-        <div className="flex items-center justify-between p-8 rounded-2xl backdrop-blur-sm border border-white/20 shadow-lg">
-          <div>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-8 rounded-2xl backdrop-blur-sm border border-white/20 shadow-lg gap-6">
+          <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 {isAdmin ? t('dashboard.adminTitle') : t('dashboard.title')}
@@ -169,19 +169,21 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-lg mb-4 lg:mb-0">
               {isAdmin 
                 ? t('dashboard.adminDescription')
           : t('dashboard.description')
               }
             </p>
           </div>
-          <Link href="/inventory/create">
-            <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <Plus className="h-4 w-4" />
-              {t('actions.createNew')}
-            </Button>
-          </Link>
+          <div className="flex justify-center lg:justify-end">
+            <Link href="/inventory/create">
+              <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto">
+                <Plus className="h-4 w-4" />
+                {t('actions.createNew')}
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -189,13 +191,13 @@ export default function DashboardPage() {
       {inventories && inventories.length > 0 && (
         <Card className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-900/50 dark:to-gray-900/50 border-2 border-slate-200/50 dark:border-slate-700/50 shadow-xl">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   {selectedInventories.size} of {inventories.length} selected
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -310,25 +312,26 @@ export default function DashboardPage() {
               </Link>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={selectedInventories.size === inventories.length && inventories.length > 0}
-                      onCheckedChange={memoizedHandleSelectAllInventories}
-                      aria-label="Select all inventories"
-                    />
-                  </TableHead>
-                  <TableHead>{t('forms.title')}</TableHead>
-              <TableHead>{t('forms.description')}</TableHead>
-              <TableHead>{t('forms.category')}</TableHead>
-              <TableHead>{t('forms.tags')}</TableHead>
-              <TableHead>{t('common.owner')}</TableHead>
-              <TableHead>{t('common.visibility')}</TableHead>
-              <TableHead>{t('common.created')}</TableHead>
-                </TableRow>
-              </TableHeader>
+            <div className="overflow-x-auto lg:overflow-x-visible">
+              <Table className="min-w-[850px] lg:min-w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12 min-w-[48px]">
+                      <Checkbox
+                        checked={selectedInventories.size === inventories.length && inventories.length > 0}
+                        onCheckedChange={memoizedHandleSelectAllInventories}
+                        aria-label="Select all inventories"
+                      />
+                    </TableHead>
+                    <TableHead className="min-w-[140px]">{t('forms.title')}</TableHead>
+                <TableHead className="min-w-[160px]">{t('forms.description')}</TableHead>
+                <TableHead className="min-w-[100px]">{t('forms.category')}</TableHead>
+                <TableHead className="min-w-[120px]">{t('forms.tags')}</TableHead>
+                <TableHead className="min-w-[120px]">{t('common.owner')}</TableHead>
+                <TableHead className="min-w-[90px]">{t('common.visibility')}</TableHead>
+                <TableHead className="min-w-[80px]">{t('common.created')}</TableHead>
+                  </TableRow>
+                </TableHeader>
               <TableBody>
                 {inventories && inventories.map((inventory) => (
                   <TableRow 
@@ -399,9 +402,10 @@ export default function DashboardPage() {
                       {new Date(inventory.createdAt).toLocaleDateString()}
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -495,25 +499,26 @@ export default function DashboardPage() {
                 </div>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">
-                      <Checkbox
-                        checked={selectedPublicInventories.size === publicInventories.length && publicInventories.length > 0}
-                        onCheckedChange={memoizedHandleSelectAllPublicInventories}
-                        aria-label="Select all public inventories"
-                      />
-                    </TableHead>
-                    <TableHead>{t('forms.title')}</TableHead>
-              <TableHead>{t('forms.description')}</TableHead>
-              <TableHead>{t('forms.category')}</TableHead>
-              <TableHead>{t('forms.tags')}</TableHead>
-              <TableHead>{t('common.owner')}</TableHead>
-              <TableHead>{t('common.created')}</TableHead>
-                    
-                  </TableRow>
-                </TableHeader>
+              <div className="overflow-x-auto lg:overflow-x-visible">
+                <Table className="min-w-[750px] lg:min-w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12 min-w-[48px]">
+                        <Checkbox
+                          checked={selectedPublicInventories.size === publicInventories.length && publicInventories.length > 0}
+                          onCheckedChange={memoizedHandleSelectAllPublicInventories}
+                          aria-label="Select all public inventories"
+                        />
+                      </TableHead>
+                      <TableHead className="min-w-[140px]">{t('forms.title')}</TableHead>
+                <TableHead className="min-w-[160px]">{t('forms.description')}</TableHead>
+                <TableHead className="min-w-[100px]">{t('forms.category')}</TableHead>
+                <TableHead className="min-w-[120px]">{t('forms.tags')}</TableHead>
+                <TableHead className="min-w-[120px]">{t('common.owner')}</TableHead>
+                <TableHead className="min-w-[80px]">{t('common.created')}</TableHead>
+                      
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {publicInventories.map((inventory) => (
                     <TableRow 
@@ -582,6 +587,7 @@ export default function DashboardPage() {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             )}
           </CardContent>
         </Card>
