@@ -59,7 +59,7 @@ export default function AdminToolbar({
   }
 
   return (
-    <div className="flex items-center justify-between p-4 border-b bg-muted/30">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b bg-muted/30 gap-4">
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5" />
         <span className="text-sm font-medium">
@@ -67,7 +67,7 @@ export default function AdminToolbar({
         </span>
       </div>
       
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
         {/* Block Users */}
         <AlertDialog>
           <AlertDialogTrigger asChild>
