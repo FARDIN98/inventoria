@@ -187,7 +187,7 @@ export default function InventoryDetailClient({
             <div>
               <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('actions.customId')}</h3>
               {inventory.customIdFormat ? (
-                <div className="bg-muted p-2 rounded text-xs font-mono">
+                <div className="p-2 rounded text-xs font-mono ">
                   {(() => {
                     try {
                       const format = JSON.parse(inventory.customIdFormat);
@@ -247,12 +247,12 @@ export default function InventoryDetailClient({
             {canManageFields && (
               <TabsTrigger value="fields" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2 text-xs sm:text-sm bg-white/50 dark:bg-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-600/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 min-h-[2.5rem] rounded-md border border-transparent data-[state=active]:border-purple-300">
                 <Wrench className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span className="truncate text-center leading-tight text-xs sm:text-sm">{t('inventory.tabs.fieldSettings', 'Fields')}</span>
+                <span className="truncate text-center leading-tight text-xs sm:text-sm">{t('inventory.tabs.fieldSettings', 'Field Settings')}</span>
               </TabsTrigger>
             )}
             <TabsTrigger value="stats" className="flex items-center justify-center gap-1 sm:gap-2 px-2 py-2 text-xs sm:text-sm bg-white/50 dark:bg-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-600/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 min-h-[2.5rem] rounded-md border border-transparent data-[state=active]:border-orange-300">
               <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-              <span className="truncate">{t('inventory.tabs.statistics', 'Stats')}</span>
+              <span className="truncate">{t('inventory.tabs.statistics', 'Statistics')}</span>
             </TabsTrigger>
           </TabsList>
 

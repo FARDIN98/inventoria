@@ -10,8 +10,10 @@ import {
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { useTranslation } from 'react-i18next'
 
 export default function UserManagementTable({ users, selectedUsers, onSelectionChange }) {
+  const { t } = useTranslation()
   if (!users || users.length === 0) {
     return (
       <div className="bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 dark:from-slate-900 dark:via-slate-800/50 dark:to-blue-950/30 border border-slate-200/60 dark:border-slate-700/60 shadow-lg backdrop-blur-sm rounded-xl">
@@ -95,11 +97,11 @@ export default function UserManagementTable({ users, selectedUsers, onSelectionC
                   aria-label="Select all users"
                 />
               </TableHead>
-              <TableHead className="w-[250px] min-w-[200px] font-bold text-slate-700 dark:text-slate-200">Email</TableHead>
-              <TableHead className="w-[200px] min-w-[150px] font-bold text-slate-700 dark:text-slate-200">Name</TableHead>
-              <TableHead className="w-[100px] min-w-[80px] font-bold text-slate-700 dark:text-slate-200">Role</TableHead>
-              <TableHead className="w-[100px] min-w-[80px] font-bold text-slate-700 dark:text-slate-200">Status</TableHead>
-              <TableHead className="w-[150px] min-w-[120px] font-bold text-slate-700 dark:text-slate-200">Created</TableHead>
+              <TableHead className="w-[250px] min-w-[200px] font-bold text-slate-700 dark:text-slate-200">{t('admin.tableHeaders.email')}</TableHead>
+              <TableHead className="w-[200px] min-w-[150px] font-bold text-slate-700 dark:text-slate-200">{t('admin.tableHeaders.name')}</TableHead>
+              <TableHead className="w-[100px] min-w-[80px] font-bold text-slate-700 dark:text-slate-200">{t('admin.tableHeaders.role')}</TableHead>
+              <TableHead className="w-[100px] min-w-[80px] font-bold text-slate-700 dark:text-slate-200">{t('admin.tableHeaders.status')}</TableHead>
+              <TableHead className="w-[150px] min-w-[120px] font-bold text-slate-700 dark:text-slate-200">{t('admin.tableHeaders.created')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -189,7 +189,15 @@
         "discussion": "Discusión",
         "fieldSettings": "Configuración de campo",
         "statistics": "Estadística"
-     }
+   },
+   "stats": {
+     "overview": "Resumen",
+     "overviewDescription": "Estadísticas generales sobre tu inventario",
+     "customFields": "Campos Personalizados",
+     "customFieldsDescription": "Análisis estadístico de tus campos personalizados",
+     "noCustomFields": "No hay campos personalizados disponibles",
+     "noCustomFieldsDescription": "Agrega campos personalizados a tu inventario para ver estadísticas detalladas aquí"
+   }
    },
    "home": {
      "welcome": "Bienvenido a Inventoria",
@@ -247,7 +255,15 @@
      "demoting": "Degradando...",
      "delete": "Eliminar",
      "deleteUsers": "Eliminar Usuarios",
-     "deleting": "Eliminando..."
+     "deleting": "Eliminando...",
+     "totalUsers": "Total de Usuarios: {{count}}",
+     "tableHeaders": {
+       "name": "Nombre",
+       "email": "Correo",
+       "role": "Rol",
+       "status": "Estado",
+       "created": "Creado"
+     }
    },
    "errors": {
      "unexpected": "Ocurrió un error inesperado",

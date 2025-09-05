@@ -193,7 +193,15 @@
         "discussion": "Discussion",
         "fieldSettings": "Field Settings",
         "statistics": "Statistics"
-     }
+   },
+   "stats": {
+     "overview": "Overview",
+     "overviewDescription": "General statistics about your inventory",
+     "customFields": "Custom Fields",
+     "customFieldsDescription": "Statistical analysis of your custom fields",
+     "noCustomFields": "No custom fields available",
+     "noCustomFieldsDescription": "Add custom fields to your inventory to see detailed statistics here"
+   }
    },
    "home": {
      "welcome": "Welcome to Inventoria",
@@ -251,7 +259,15 @@
      "demoting": "Demoting...",
      "delete": "Delete",
      "deleteUsers": "Delete Users",
-     "deleting": "Deleting..."
+     "deleting": "Deleting...",
+     "totalUsers": "Total Users: {{count}}",
+     "tableHeaders": {
+       "name": "Name",
+       "email": "Email",
+       "role": "Role",
+       "status": "Status",
+       "created": "Created"
+     }
    },
    "errors": {
      "unexpected": "An unexpected error occurred",

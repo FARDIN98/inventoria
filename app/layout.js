@@ -34,7 +34,7 @@ export default function RootLayout({ children }) {
           <I18nProvider>
             <div className="min-h-screen bg-background">
               <Header />
-              <main className="container mx-auto px-4 py-6 max-w-7xl">
+              <main>
                 {children}
               </main>
             </div>

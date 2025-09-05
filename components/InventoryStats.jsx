@@ -121,8 +121,8 @@ export default function InventoryStats({ inventory, items = [], fieldTemplates =
             {t('inventory.stats.overview')}
           </CardTitle>
           <CardDescription>
-            {t('inventory.stats.overviewDescription')}
-          </CardDescription>
+              {t('inventory.stats.overviewDescription')}
+            </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
