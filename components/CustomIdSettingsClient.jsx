@@ -63,7 +63,7 @@ export default function CustomIdSettingsClient({
           <Link href={`/inventory/${inventory.id}`}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('actions.back')}
+              {t('actions.back', 'back')}
             </Button>
           </Link>
         </div>
