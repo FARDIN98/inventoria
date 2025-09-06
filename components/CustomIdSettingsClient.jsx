@@ -57,41 +57,48 @@ export default function CustomIdSettingsClient({
   return (
     <div className="container mx-auto py-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="space-y-4">
+        {/* Back Button */}
+        <div className="flex items-center">
           <Link href={`/inventory/${inventory.id}`}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t('actions.back')}
             </Button>
           </Link>
-          <div>
+        </div>
+        
+        {/* Title Section */}
+        <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <div className="flex items-center gap-2">
               <Settings className="h-6 w-6" />
-              <h1 className="text-3xl font-bold tracking-tight">Custom ID Settings</h1>
-              {isAdmin && (
-                <Badge variant="outline" className="text-amber-600 border-amber-600">
-                  {t('inventory.adminView')}
-                </Badge>
-              )}
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Custom ID Settings</h1>
             </div>
-            <p className="text-muted-foreground">
-              Configure custom ID format for <strong>{inventory.title}</strong>
-            </p>
+            {isAdmin && (
+              <Badge variant="outline" className="text-amber-600 border-amber-600 w-fit">
+                {t('inventory.adminView')}
+              </Badge>
+            )}
           </div>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Configure custom ID format for <strong>{inventory.title}</strong>
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          {hasChanges && (
+        
+        {/* Save Button */}
+        {hasChanges && (
+          <div className="flex justify-end">
             <Button 
               onClick={handleSave} 
               disabled={isSaving}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <Save className="h-4 w-4" />
               {isSaving ? 'Saving...' : 'Save Changes'}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Custom ID Format Manager */}
