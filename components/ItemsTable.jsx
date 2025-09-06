@@ -253,7 +253,7 @@ export default function ItemsTable({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">{t('items.itemsCount', { count: items.length })}</h3>
+        <h3 className="text-lg font-semibold">{t('items.itemsCount', 'Items', { count: items.length })}</h3>
         {canEdit && (
           <Button onClick={handleAddItem} size="sm">
             <Plus className="h-4 w-4 mr-2" />
@@ -267,7 +267,7 @@ export default function ItemsTable({
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">
-              {t('common.selectedCount', { selected: selectedCount, total: items.length })}
+              {t('common.selectedCount', 'Selected Item', { selected: selectedCount, total: items.length })}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ export default function ItemsTable({
                   aria-label="Select all items"
                 />
               </TableHead>
-              <TableHead className="w-[120px]">{t('items.customId')}</TableHead>
+              <TableHead className="w-[120px]">{t('items.customId', 'Custom ID')}</TableHead>
               {visibleFieldTemplates.map((template) => (
                 <TableHead key={template.id}>
                   {template.title}

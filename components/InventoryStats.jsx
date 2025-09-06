@@ -118,10 +118,10 @@ export default function InventoryStats({ inventory, items = [], fieldTemplates =
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            {t('inventory.stats.overview')}
+            {t('inventory.stats.overview', 'Stats Overview')}
           </CardTitle>
           <CardDescription>
-              {t('inventory.stats.overviewDescription')}
+              {t('inventory.stats.overviewDescription', 'Stats Description')}
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -173,10 +173,10 @@ export default function InventoryStats({ inventory, items = [], fieldTemplates =
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              {t('inventory.stats.customFields')}
+              {t('inventory.stats.customFields', 'Stats of Custom Fields')}
             </CardTitle>
             <CardDescription>
-              {t('inventory.stats.customFieldsDescription')}
+              {t('inventory.stats.customFieldsDescription', 'Stats of Custom Field Description')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -319,12 +319,12 @@ export default function InventoryStats({ inventory, items = [], fieldTemplates =
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Info className="h-5 w-5" />
-              {t('inventory.stats.noCustomFields')}
+              {t('inventory.stats.noCustomFields', 'Stats of No Custom Fields')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              {t('inventory.stats.noCustomFieldsDescription')}
+              {t('inventory.stats.noCustomFieldsDescription', 'Stats of no custom field description')}
             </p>
           </CardContent>
         </Card>

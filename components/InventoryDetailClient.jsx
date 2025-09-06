@@ -76,7 +76,7 @@ export default function InventoryDetailClient({
             <Link href="/dashboard">
               <Button variant="ghost" size="sm" className="hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-500 hover:text-white transition-all duration-200 w-fit">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                {t('actions.back')}
+                {t('actions.back', 'Back')}
               </Button>
             </Link>
             <div className="flex-1">
@@ -84,12 +84,12 @@ export default function InventoryDetailClient({
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent">{inventory.title}</h1>
                 {isAdmin && (
                   <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md animate-pulse w-fit">
-                    {t('inventory.adminView')}
+                    {t('inventory.adminView', 'Admin View')}
                   </Badge>
                 )}
               </div>
               <p className="text-muted-foreground text-sm sm:text-base">
-                {t('inventory.createdBy')} {inventory.users?.name || inventory.users?.email || t('common.unknown')} {t('inventory.on')} {new Date(inventory.createdAt).toLocaleDateString()}
+                {t('inventory.createdBy', 'Created By')} {inventory.users?.name || inventory.users?.email || t('common.unknown')} {t('inventory.on', 'On')} {new Date(inventory.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -123,14 +123,14 @@ export default function InventoryDetailClient({
         {/* Inventory Details */}
         <Card className="bg-gradient-to-br from-white/90 to-slate-50/80 dark:from-slate-900/90 dark:to-slate-950/80 border-slate-200/50 dark:border-slate-700/50 shadow-xl backdrop-blur-sm">
           <CardHeader className="bg-gradient-to-r from-slate-50/50 to-blue-50/50 dark:from-slate-950/30 dark:to-blue-950/30">
-            <CardTitle className="bg-gradient-to-r from-slate-700 to-blue-700 dark:from-slate-300 dark:to-blue-300 bg-clip-text text-transparent">{t('inventory.inventoryDetails')}</CardTitle>
+            <CardTitle className="bg-gradient-to-r from-slate-700 to-blue-700 dark:from-slate-300 dark:to-blue-300 bg-clip-text text-transparent">{t('inventory.inventoryDetails', 'Inventory Details')}</CardTitle>
             <CardDescription>
-              {t('inventory.basicInformation')}
+              {t('inventory.basicInformation', 'Basic Information')}
             </CardDescription>
           </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h3 className="font-medium text-sm text-muted-foreground mb-2">{t('forms.description')}</h3>
+            <h3 className="font-medium text-sm text-muted-foreground mb-2">{t('forms.description', 'Inventory Description')}</h3>
             <p className="text-sm">
               {inventory.description || t('inventory.noDescription')}
             </p>
@@ -138,14 +138,14 @@ export default function InventoryDetailClient({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h3 className="font-medium text-sm text-muted-foreground mb-2">{t('forms.category')}</h3>
+              <h3 className="font-medium text-sm text-muted-foreground mb-2">{t('forms.category', 'Category')}</h3>
               <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
                 {inventory.categories?.name || t('common.uncategorized')}
               </Badge>
             </div>
             
             <div>
-              <h3 className="font-medium text-sm text-muted-foreground mb-2">{t('forms.tags')}</h3>
+              <h3 className="font-medium text-sm text-muted-foreground mb-2">{t('forms.tags', 'Tags')}</h3>
               <div className="flex flex-wrap gap-2">
                 {inventory.inventory_tags && inventory.inventory_tags.length > 0 ? (
                   inventory.inventory_tags.map((tagRelation, index) => (
@@ -165,27 +165,27 @@ export default function InventoryDetailClient({
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
             <div>
-              <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('common.visibility')}</h3>
+              <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('common.visibility', 'Visibility')}</h3>
               <Badge className={inventory.isPublic 
                 ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md" 
                 : "bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-md"
               }>
-                {inventory.isPublic ? t('common.public') : t('common.private')}
+                {inventory.isPublic ? t('common.public', 'public') : t('common.private', 'private')}
               </Badge>
             </div>
             
             <div>
-              <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('common.created')}</h3>
+              <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('common.created', 'Created At')}</h3>
               <p className="text-sm">{new Date(inventory.createdAt).toLocaleDateString()}</p>
             </div>
             
             <div>
-              <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('inventory.lastUpdated')}</h3>
+              <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('inventory.lastUpdated', 'Last Updated')}</h3>
               <p className="text-sm">{new Date(inventory.updatedAt).toLocaleDateString()}</p>
             </div>
             
             <div>
-              <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('actions.customId')}</h3>
+              <h3 className="font-medium text-sm text-muted-foreground mb-1">{t('actions.customId', 'Custom ID')}</h3>
               {inventory.customIdFormat ? (
                 <div className="p-2 rounded text-xs font-mono ">
                   {(() => {
