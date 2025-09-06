@@ -339,7 +339,7 @@ export default function ItemsTable({
                   <TableHead>{t('items.bool3')}</TableHead>
                 </>
               )}
-              <TableHead className="w-[80px]">{t('items.likes')}</TableHead>
+              <TableHead className="w-[80px]">{t('items.likes', 'Likes')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
