@@ -29,7 +29,7 @@ import { Plus, Edit, Trash2, ExternalLink } from 'lucide-react';
 import ItemDialog from './ItemDialog';
 import LikeButton from './LikeButton';
 import LikeCount from './LikeCount';
-import { deleteItemAction } from '@/lib/item-actions';
+import { deleteItemAction, bulkDeleteItemsAction } from '@/lib/item-actions';
 import useLikesStore from '@/lib/stores/likes';
 import { formatDistanceToNow } from 'date-fns';
 import { getFieldColumnName } from '@/lib/utils/custom-fields-utils';
@@ -85,6 +85,18 @@ export default function ItemsTable({
     }
   );
   
+  const { loading: bulkLoading, execute: executeBulkDelete } = useAsyncOperation(
+    async (itemIds) => await bulkDeleteItemsAction(itemIds),
+    {
+      onSuccess: () => {
+        onItemsChange?.();
+        closeDeleteDialog();
+        setDeletingItem(null);
+        clearSelection();
+      }
+    }
+  );
+  
   // Load like states for all items using Zustand store
   useEffect(() => {
     if (items.length > 0) {
@@ -109,7 +121,12 @@ export default function ItemsTable({
 
   const handleDeleteConfirm = async () => {
     if (!deletingItem) return;
-    await executeDelete(deletingItem.id);
+    
+    if (deletingItem.isBulk) {
+      await executeBulkDelete(deletingItem.ids);
+    } else {
+      await executeDelete(deletingItem.id);
+    }
   };
 
   const handleEditSelected = () => {
@@ -129,6 +146,10 @@ export default function ItemsTable({
       if (item) {
         handleDeleteClick(item);
       }
+    } else if (selectedCount > 1) {
+      // For bulk delete, set a special state
+      setDeletingItem({ isBulk: true, count: selectedCount, ids: Array.from(selectedItems) });
+      openDeleteDialog();
     }
   };
 
@@ -294,10 +315,10 @@ export default function ItemsTable({
                   variant="outline"
                   size="sm"
                   onClick={handleDeleteSelected}
-                  disabled={selectedCount !== 1}
+                  disabled={selectedCount === 0}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  {t('actions.delete')}
+                  {selectedCount > 1 ? `${t('actions.delete')} (${selectedCount})` : t('actions.delete')}
                 </Button>
               </>
             )}
@@ -415,22 +436,29 @@ export default function ItemsTable({
       <AlertDialog open={deleteDialogOpen} onOpenChange={closeDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Item</AlertDialogTitle>
+            <AlertDialogTitle>
+              {deletingItem?.isBulk ? `Delete ${deletingItem.count} Items` : 'Delete Item'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the item "{deletingItem?.customId}"? 
-              This action cannot be undone.
+              {deletingItem?.isBulk 
+                ? `Are you sure you want to delete ${deletingItem.count} selected items? This action cannot be undone.`
+                : `Are you sure you want to delete the item "${deletingItem?.customId}"? This action cannot be undone.`
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={loading}>
+            <AlertDialogCancel disabled={loading || bulkLoading}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              disabled={loading}
+              disabled={loading || bulkLoading}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {loading ? 'Deleting...' : 'Delete'}
+              {(loading || bulkLoading) 
+                ? (deletingItem?.isBulk ? 'Deleting Items...' : 'Deleting...') 
+                : (deletingItem?.isBulk ? `Delete ${deletingItem.count} Items` : 'Delete')
+              }
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
