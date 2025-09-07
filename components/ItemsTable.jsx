@@ -306,7 +306,9 @@ export default function ItemsTable({
       )}
 
       <div className="border rounded-lg overflow-hidden">
-        <Table>
+        {/* Horizontal scroll wrapper for responsive table */}
+        <div className="overflow-x-auto">
+          <Table className="min-w-[800px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px]">
@@ -392,7 +394,8 @@ export default function ItemsTable({
               );
             })}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </div>
 
       {/* Add/Edit Dialog */}
