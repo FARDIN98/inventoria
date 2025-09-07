@@ -195,25 +195,48 @@ export default function InventoryDetailClient({
                       
                       if (elements.length === 0) return 'Invalid format';
                       
-                      // Generate sample ID using exact same logic as CustomIdFormatManager preview
+                      // Generate realistic preview ID with dynamic values
+                      const now = new Date();
+                      const itemCount = items?.length || 0;
+                      
                       const previewParts = elements.map(element => {
                         switch (element.type) {
                           case 'FIXED_TEXT':
                             return element.value || '';
                           case 'DATETIME':
-                            return '20240115';
+                            // Format current date as YYYYMMDD
+                            const year = now.getFullYear();
+                            const month = String(now.getMonth() + 1).padStart(2, '0');
+                            const day = String(now.getDate()).padStart(2, '0');
+                            return `${year}${month}${day}`;
                           case 'SEQUENCE':
-                            return '001';
+                            // Show next sequence number (item count + 1)
+                            const nextSeq = itemCount + 1;
+                            const minDigits = element.options?.minDigits || 1;
+                            return nextSeq.toString().padStart(minDigits, '0');
                           case 'GUID':
-                            return '12345678-1234-4123-8123-123456789012';
+                            // Generate a sample UUID v4
+                            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                              const r = Math.random() * 16 | 0;
+                              const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                              return v.toString(16);
+                            });
                           case 'RANDOM_6DIGIT':
-                            return '123456';
+                            // Generate 6 random digits
+                            return Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
                           case 'RANDOM_9DIGIT':
-                            return '123456789';
+                            // Generate 9 random digits
+                            return Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
                           case 'RANDOM_20BIT':
-                            return '524288';
+                            // Generate random number 0 to 1,048,575 (2^20-1)
+                            const random20 = Math.floor(Math.random() * 1048576);
+                            const minDigits20 = element.options?.minDigits || 1;
+                            return random20.toString().padStart(minDigits20, '0');
                           case 'RANDOM_32BIT':
-                            return '2147483648';
+                            // Generate random number 0 to 4,294,967,295 (2^32-1)
+                            const random32 = Math.floor(Math.random() * 4294967296);
+                            const minDigits32 = element.options?.minDigits || 1;
+                            return random32.toString().padStart(minDigits32, '0');
                           default:
                             return '';
                         }
