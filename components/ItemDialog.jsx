@@ -39,15 +39,23 @@ export default function ItemDialog({
   // Use reusable hooks for common patterns
   const { loading, error, execute: executeSubmit, reset: resetAsyncOperation } = useAsyncOperation(
     async (formDataToSubmit) => {
+      let result;
       if (isEdit) {
-        return await editItemAction(item.id, formDataToSubmit, item.version);
+        result = await editItemAction(item.id, formDataToSubmit, item.version);
       } else {
-        return await addItemAction(inventoryId, formDataToSubmit);
+        result = await addItemAction(inventoryId, formDataToSubmit);
       }
+      
+      // Handle server action response format
+      if (result && !result.success) {
+        throw new Error(result.error || 'Operation failed');
+      }
+      
+      return result;
     },
     {
       onSuccess: (result) => {
-        if (result.success) {
+        if (result && result.success) {
           onSuccess?.();
           onOpenChange(false);
         }
