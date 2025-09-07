@@ -133,7 +133,7 @@ export default function ItemDialog({
       if (isValid) {
         setCustomIdValidation({ isValid: true, message: t('forms.validation.customIdValid', 'Custom ID is valid') });
       } else {
-        setCustomIdValidation({ isValid: false, message: t('forms.validation.customIdInvalid', 'Custom ID already exists') });
+        setCustomIdValidation({ isValid: false, message: t('forms.validation.customIdInvalid', 'Custom ID format doesnt match ') });
       }
     } catch (error) {
       console.error('Custom ID validation error:', error);
