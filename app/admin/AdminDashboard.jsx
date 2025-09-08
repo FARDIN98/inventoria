@@ -101,16 +101,17 @@ export default function AdminDashboard() {
   const handleBulkDemote = async () => {
     try {
       const result = await bulkDemote(selectedUsers)
-      toast.success(`Successfully demoted ${selectedUsers.length} user${selectedUsers.length !== 1 ? 's' : ''} from admin`)
       
-      // If admin demoted themselves, redirect to homepage
-      if (result?.isSelfDemotion) {
-        toast.info('You have been demoted from admin. Redirecting to login...')
-        setTimeout(() => {
-          router.push('/')
-        }, 1500)
+      // Check if any of the demoted users includes self-demotion
+      const hasSelfDemotion = result?.some?.(r => r?.isSelfDemotion) || result?.isSelfDemotion
+      
+      if (hasSelfDemotion) {
+        toast.info(t('admin.selfDemotionLogout'))
+        // Auto-logout is handled in the admin store
         return
       }
+      
+      toast.success(`Successfully demoted ${selectedUsers.length} user${selectedUsers.length !== 1 ? 's' : ''} from admin`)
     } catch (err) {
       toast.error('Failed to demote users')
     }

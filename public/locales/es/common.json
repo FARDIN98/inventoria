@@ -253,6 +253,7 @@
      "demoteFromAdmin": "Degradar de Administrador",
      "demoteUsers": "Degradar Usuarios",
      "demoting": "Degradando...",
+     "selfDemotionLogout": "Has sido degradado de administrador. Cerrando sesión...",
      "delete": "Eliminar",
      "deleteUsers": "Eliminar Usuarios",
      "deleting": "Eliminando...",

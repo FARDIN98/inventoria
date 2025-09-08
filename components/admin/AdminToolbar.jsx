@@ -63,7 +63,7 @@ export default function AdminToolbar({
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5" />
         <span className="text-sm font-medium">
-          {t('admin.usersSelected', { count: selectedCount })}
+          {t('admin.usersSelected', 'Selected {{count}} users', { count: selectedCount })}
         </span>
       </div>
       
@@ -84,7 +84,7 @@ export default function AdminToolbar({
             <AlertDialogHeader>
               <AlertDialogTitle>{t('admin.blockUsers')}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t('admin.blockUsersConfirm', { count: selectedCount })}
+                {t('admin.blockUsersConfirm', 'Are you sure you want to block {{count}} users?', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -113,9 +113,9 @@ export default function AdminToolbar({
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t('admin.unblockUsers')}</AlertDialogTitle>
+              <AlertDialogTitle>{t('admin.unblockUsers', 'Unblock users')}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t('admin.unblockUsersConfirm', { count: selectedCount })}
+                {t('admin.unblockUsersConfirm', 'Are you sure you want to unblock {{count}} users?', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -146,7 +146,7 @@ export default function AdminToolbar({
             <AlertDialogHeader>
               <AlertDialogTitle>{t('admin.promoteToAdmin')}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t('admin.promoteUsersConfirm', { count: selectedCount })}
+                {t('admin.promoteUsersConfirm', 'Are you sure you want to promote {{count}} users to admin?', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -177,7 +177,7 @@ export default function AdminToolbar({
             <AlertDialogHeader>
               <AlertDialogTitle>{t('admin.demoteFromAdmin')}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t('admin.demoteUsersConfirm', { count: selectedCount })}
+                {t('admin.demoteUsersConfirm', 'Are you sure you want to demote {{count}} users to admin?', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

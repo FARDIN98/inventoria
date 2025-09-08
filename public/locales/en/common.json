@@ -257,6 +257,7 @@
      "demoteFromAdmin": "Demote from Admin",
      "demoteUsers": "Demote Users",
      "demoting": "Demoting...",
+     "selfDemotionLogout": "You have been demoted from admin. Logging out...",
      "delete": "Delete",
      "deleteUsers": "Delete Users",
      "deleting": "Deleting...",
