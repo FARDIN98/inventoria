@@ -208,7 +208,7 @@ export default function AdminToolbar({
             <AlertDialogHeader>
               <AlertDialogTitle>{t('admin.deleteUsers')}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t('admin.deleteUsersConfirm', { count: selectedCount })}
+                {t('admin.deleteUsersConfirm', 'Are you sure you want to delete {{count}} users?', { count: selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
