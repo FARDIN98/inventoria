@@ -410,8 +410,8 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Public Inventories Toolbar */}
-      {!isAdmin && publicInventories && publicInventories.length > 0 && (
+      {/* Public Inventories Toolbar - Hidden for authenticated users */}
+      {!isAdmin && !user && publicInventories && publicInventories.length > 0 && (
         <Card className="bg-gradient-to-br from-blue-50/80 via-indigo-50/60 to-purple-50/80 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-purple-950/30 border-blue-200/50 dark:border-blue-800/30 backdrop-blur-sm">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -503,13 +503,16 @@ export default function DashboardPage() {
                 <Table className="min-w-[750px] lg:min-w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12 min-w-[48px]">
-                        <Checkbox
-                          checked={selectedPublicInventories.size === publicInventories.length && publicInventories.length > 0}
-                          onCheckedChange={memoizedHandleSelectAllPublicInventories}
-                          aria-label="Select all public inventories"
-                        />
-                      </TableHead>
+                      {/* Checkbox column - Hidden for authenticated users */}
+                      {!user && (
+                        <TableHead className="w-12 min-w-[48px]">
+                          <Checkbox
+                            checked={selectedPublicInventories.size === publicInventories.length && publicInventories.length > 0}
+                            onCheckedChange={memoizedHandleSelectAllPublicInventories}
+                            aria-label="Select all public inventories"
+                          />
+                        </TableHead>
+                      )}
                       <TableHead className="min-w-[140px]">{t('forms.title')}</TableHead>
                 <TableHead className="min-w-[160px]">{t('forms.description')}</TableHead>
                 <TableHead className="min-w-[100px]">{t('forms.category')}</TableHead>
@@ -529,13 +532,16 @@ export default function DashboardPage() {
                           : ''
                       }`}
                     >
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedPublicInventories.has(inventory.id)}
-                          onCheckedChange={(checked) => memoizedHandlePublicInventorySelect(inventory.id, checked)}
-                          aria-label={`Select ${inventory.title}`}
-                        />
-                      </TableCell>
+                      {/* Checkbox cell - Hidden for authenticated users */}
+                      {!user && (
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedPublicInventories.has(inventory.id)}
+                            onCheckedChange={(checked) => memoizedHandlePublicInventorySelect(inventory.id, checked)}
+                            aria-label={`Select ${inventory.title}`}
+                          />
+                        </TableCell>
+                      )}
                       <TableCell className="font-medium">
                         <Link 
                           href={`/inventory/${inventory.id}`}
