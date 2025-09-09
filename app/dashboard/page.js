@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Plus, Edit, Trash2, Eye, EyeOff, Shield } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Shield, RefreshCw } from 'lucide-react';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -49,7 +49,7 @@ export default function DashboardPage() {
       // Check authentication and redirect if needed
       await requireAuth();
       
-      // Load dashboard data with caching
+      // Load dashboard data (always fresh with no cache)
       await loadDashboardData();
     } catch (err) {
       console.error('Dashboard error:', err);
@@ -141,6 +141,15 @@ export default function DashboardPage() {
     }
   }, [deletePublicInventory]);
 
+  // Simple refresh handler
+  const handleRefresh = useCallback(async () => {
+    try {
+      await loadDashboardData(true); // Force refresh
+    } catch (err) {
+      console.error('Refresh error:', err);
+    }
+  }, [loadDashboardData]);
+
   if (isLoading || loading) {
     return (
       <div className="container mx-auto py-8">
@@ -176,7 +185,16 @@ export default function DashboardPage() {
               }
             </p>
           </div>
-          <div className="flex justify-center lg:justify-end">
+          <div className="flex justify-center lg:justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? t('common.loading') : 'Refresh'}
+            </Button>
             <Link href="/inventory/create">
               <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 w-full sm:w-auto">
                 <Plus className="h-4 w-4" />
