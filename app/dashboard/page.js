@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, Eye, EyeOff, Shield, RefreshCw } from 'lucide-react';
+import SalesforceForm from '@/components/salesforce/SalesforceForm';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -616,6 +617,21 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Salesforce Integration Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Salesforce Integration
+            </h2>
+            <p className="text-muted-foreground">
+              Export user data to your Salesforce CRM system
+            </p>
+          </div>
+        </div>
+        <SalesforceForm />
+      </div>
     </div>
   );
 }
