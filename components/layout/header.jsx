@@ -38,6 +38,7 @@ export function Header() {
           const result = await checkAdminPermission()
           setIsAdmin(result.success && result.isAdmin)
         } catch (error) {
+          console.log('Admin check failed (expected for non-authenticated users):', error.message)
           setIsAdmin(false)
         }
       } else {

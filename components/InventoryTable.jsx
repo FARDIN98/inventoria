@@ -68,7 +68,7 @@ export default function InventoryTable({ data, title }) {
                 </TableCell>
                 <TableCell>
                   <span className="inline-flex items-center rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/60 dark:to-teal-900/60 px-3 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-200 shadow-sm border border-emerald-200/50 dark:border-emerald-700/50 hover:scale-105 transition-transform duration-200">
-                    {inventory.users?.name || inventory.users?.email || t('common.unknown')}
+                    {inventory.users?.name || inventory.users?.email?.split('@')[0] || t('common.unknown')}
                   </span>
                 </TableCell>
               </TableRow>

@@ -89,7 +89,7 @@ export default function InventoryDetailClient({
                 )}
               </div>
               <p className="text-muted-foreground text-sm sm:text-base">
-                {t('inventory.createdBy', 'Created By')} {inventory.users?.name || inventory.users?.email || t('common.unknown')} {t('inventory.on', 'On')} {new Date(inventory.createdAt).toLocaleDateString()}
+                {t('inventory.createdBy', 'Created By')} {inventory.users?.name || inventory.users?.email?.split('@')[0] || t('common.unknown')} {t('inventory.on', 'On')} {new Date(inventory.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>

@@ -284,7 +284,7 @@ function SearchPageContent() {
                           </CardHeader>
                           <CardContent>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                              <span>{t('inventory.owner', 'Owner')}: {inventory.owner?.name || inventory.owner?.email}</span>
+                              <span>{t('inventory.owner', 'Owner')}: {inventory.owner?.name || inventory.owner?.email?.split('@')[0] || t('common.unknown')}</span>
                               {inventory.category && (
                                 <span>{t('inventory.category', 'Category')}: {inventory.category.name}</span>
                               )}

@@ -37,6 +37,7 @@ export default function DashboardPage() {
     toggleVisibility,
     deletePublicInventory,
     handleWindowResize,
+    clearCache,
     cleanup
   } = useDashboardStore();
   const router = useRouter();
@@ -50,13 +51,14 @@ export default function DashboardPage() {
       // Check authentication and redirect if needed
       await requireAuth();
       
-      // Load dashboard data (always fresh with no cache)
-      await loadDashboardData();
+      // Clear cache and load fresh data
+      clearCache();
+      await loadDashboardData(true); // Force fresh data
     } catch (err) {
       console.error('Dashboard error:', err);
       router.push('/login');
     }
-  }, [isLoading, loadDashboardData, router]);
+  }, [isLoading, loadDashboardData, clearCache, router]);
 
   useEffect(() => {
     checkAuthAndLoadData();
@@ -398,7 +400,9 @@ export default function DashboardPage() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div className="font-medium">{inventory.users?.name || t('common.unknown')}</div>
+                          <div className="font-medium">
+                            {inventory.users?.name || inventory.users?.email?.split('@')[0] || t('common.unknown')}
+                          </div>
                           <div className="text-muted-foreground">{inventory.users?.email}</div>
                         </div>
                       </TableCell>
@@ -595,7 +599,9 @@ export default function DashboardPage() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div className="font-medium">{inventory.users?.name || t('common.unknown')}</div>
+                          <div className="font-medium">
+                            {inventory.users?.name || inventory.users?.email?.split('@')[0] || t('common.unknown')}
+                          </div>
                           <div className="text-muted-foreground">{inventory.users?.email}</div>
                         </div>
                       </TableCell>
