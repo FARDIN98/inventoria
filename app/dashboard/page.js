@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, Eye, EyeOff, Shield, RefreshCw } from 'lucide-react';
 import SalesforceForm from '@/components/salesforce/SalesforceForm';
+import DropboxConnection from '@/components/DropboxConnection';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -637,6 +638,21 @@ export default function DashboardPage() {
           </div>
         </div>
         <SalesforceForm />
+      </div>
+
+      {/* Dropbox Integration Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              Dropbox Integration
+            </h2>
+            <p className="text-muted-foreground">
+              Connect your Dropbox account to enable automatic support ticket uploads
+            </p>
+          </div>
+        </div>
+        <DropboxConnection />
       </div>
     </div>
   );

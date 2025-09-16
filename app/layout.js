@@ -3,6 +3,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { I18nProvider } from "@/components/providers/i18n-provider";
 import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,11 +34,13 @@ export default function RootLayout({ children }) {
           disableTransitionOnChange
         >
           <I18nProvider>
-            <div className="min-h-screen bg-background">
+            <div className="min-h-screen bg-background flex flex-col">
               <Header />
-              <main>
+              <main className="flex-1">
                 {children}
               </main>
+              <Footer />
+              <Toaster richColors position="top-right" />
             </div>
           </I18nProvider>
         </ThemeProvider>
