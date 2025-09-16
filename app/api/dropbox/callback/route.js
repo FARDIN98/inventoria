@@ -5,13 +5,14 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const error = searchParams.get('error')
+  const baseUrl = new URL(request.url).origin
   
   if (error) {
-    return NextResponse.redirect('/dashboard?error=dropbox_auth_failed')
+    return NextResponse.redirect(`${baseUrl}/dropbox-callback-result?error=dropbox_auth_failed`)
   }
   
   if (!code) {
-    return NextResponse.redirect('/dashboard?error=no_auth_code')
+    return NextResponse.redirect(`${baseUrl}/dropbox-callback-result?error=no_auth_code`)
   }
   
   try {
@@ -41,7 +42,7 @@ export async function GET(request) {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
-      return NextResponse.redirect('/login?error=not_authenticated')
+      return NextResponse.redirect(`${baseUrl}/dropbox-callback-result?error=not_authenticated`)
     }
     
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000)
@@ -60,10 +61,10 @@ export async function GET(request) {
       throw new Error('Failed to store tokens')
     }
     
-    return NextResponse.redirect('/dashboard?success=dropbox_connected')
+    return NextResponse.redirect(`${baseUrl}/dropbox-callback-result?success=dropbox_connected`)
     
   } catch (error) {
     console.error('Dropbox OAuth error:', error)
-    return NextResponse.redirect('/dashboard?error=dropbox_connection_failed')
+    return NextResponse.redirect(`${baseUrl}/dropbox-callback-result?error=dropbox_connection_failed`)
   }
 }
