@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Settings, Menu, X } from "lucide-react"
+import { Settings, Menu, X, HelpCircle } from "lucide-react"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { SearchInput } from "@/components/SearchInput"
@@ -10,6 +10,7 @@ import { useEffect, useState } from "react"
 import { checkAdminPermission } from "@/lib/admin-actions"
 import dynamic from "next/dynamic"
 import { useTranslation } from "react-i18next"
+import { SupportTicketDialog } from "@/components/SupportTicketDialog"
 
 const LanguageSwitcher = dynamic(() => import('../LanguageSwitcher'), { ssr: false })
 
@@ -84,6 +85,16 @@ export function Header() {
                     </Link>
                   </Button>
                 )}
+                
+                {/* Support Ticket Help Icon */}
+                <SupportTicketDialog 
+                  trigger={
+                    <Button variant="ghost" size="sm" className="flex items-center gap-1">
+                      <HelpCircle className="h-4 w-4" />
+                      {t('navigation.help', 'Help')}
+                    </Button>
+                  }
+                />
               </div>
             )}
 
@@ -166,6 +177,16 @@ export function Header() {
                         </Link>
                       </Button>
                     )}
+                    
+                    {/* Support Ticket Help - Mobile */}
+                    <SupportTicketDialog 
+                      trigger={
+                        <Button variant="ghost" className="w-full justify-start" onClick={() => setIsMobileMenuOpen(false)}>
+                          <HelpCircle className="h-4 w-4 mr-2" />
+                          {t('navigation.help', 'Help')}
+                        </Button>
+                      }
+                    />
                     
                     {/* User Info */}
                     <div className="px-3 py-2 text-sm font-medium text-foreground border rounded-md">
